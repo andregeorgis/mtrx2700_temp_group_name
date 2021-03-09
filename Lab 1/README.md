@@ -3,9 +3,13 @@
 ## Members and Roles
 
 Hilton Nguyen - Exercise 1 Memory and Pointers
+
 Jasmine Huang - Exercise 1 Memory and Pointers
+
 Zhengbo Feng - Exercise 2 Digital Input/Output
+
 Andre Georgis - Exercise 3 Serial Input/Output
+
 
 ## Exercise 1 Memory and Pointers
 
