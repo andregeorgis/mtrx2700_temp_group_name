@@ -8687,6 +8687,7 @@ mNVFSEC_KEYEN1:     equ    %10000000
 ROMStart    EQU  $4000  ; absolute address to place my code/constant data
 
 ; Define enables for the 7 segments
+NO_SEG      EQU  $FF   ; value to enable no segments
 FIRST_SEG   EQU  $FE   ; value to enable the first segment
 SECOND_SEG  EQU  $FD   ; value to enable the second segment
 THIRD_SEG   EQU  $FB   ; value to enable the third segment
@@ -8719,10 +8720,32 @@ configure:  LDAA    #$FF
             STAA    DDRP    ; Port P as output to enable 7 segments
 
 mainLoop:
-            LDAA    #FIRST_SEG
-            STAA    PTP
-            LDAB    #$3F
-            STAB    PORTB    
+            
+            LDAB    #$06
+            STAB    PORTB          ; Assign the number 1
+            LDAA    #FIRST_SEG     
+            STAA    PTP            ; Enable the first segment
+            LDAA    #NO_SEG
+            ;STAA    PTP            ; Disable all segments
+            LDAB    #$5B
+            STAB    PORTB          ; Assign the number 2
+            LDAA    #SECOND_SEG
+            STAA    PTP            ; Enable the second segment
+            LDAA    #NO_SEG
+            ;STAA    PTP            ; Disable all segments
+            LDAB    #$4F
+            STAB    PORTB          ; Assign the number 3
+            LDAA    #THIRD_SEG     
+            STAA    PTP            ; Enable the third segment
+            LDAA    #NO_SEG
+            ;STAA    PTP            ; Disable all segments
+            LDAB    #$66
+            STAB    PORTB          ; Assign the number 4
+            LDAA    #FOURTH_SEG
+            STAA    PTP            ; Enable the fourth segment
+            LDAA    #NO_SEG
+            ;STAA    PTP            ; Disable all segments
+            bra     mainLoop    
             
 
 Lookup:     NOP ; grab number, give back segment code
