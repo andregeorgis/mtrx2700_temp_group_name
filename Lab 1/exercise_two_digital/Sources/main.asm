@@ -19,6 +19,15 @@
 
 ROMStart    EQU  $4000  ; absolute address to place my code/constant data
 
+; Define enables for the 7 segments
+FIRST_SEG   EQU  $FE   ; value to enable the first segment
+SECOND_SEG  EQU  $FD   ; value to enable the second segment
+THIRD_SEG   EQU  $FB   ; value to enable the third segment
+FOURTH_SEG  EQU  $F7   ; value to enable the fourth segment
+
+; Define the lookup codes for every special character
+;SEG_CODES   FCB $3F, $06, $5B, $4F, $66, $6D, $7D, $07, $7F, $6F, $77, $7C, $39, $5E, $79, $71
+
 ; variable/data section
 
             ORG RAMStart
@@ -37,10 +46,16 @@ _Startup:
 
             CLI                     ; enable interrupts
             
-configure:  NOP ; should configure digital ports as input vs output before using
+; Configure the direction of ports
+configure:  LDAA    #$FF
+            STAA    DDRB    ; Configure PORTB as output
+            STAA    DDRP    ; Port P as output to enable 7 segments
 
 mainLoop:
-            NOP ; no operation
+            LDAA    #FIRST_SEG
+            STAA    PTP
+            LDAB    #$3F
+            STAB    PORTB    
             
 
 Lookup:     NOP ; grab number, give back segment code
