@@ -38,9 +38,7 @@ upper_limit_z     DS.B  1     ; upper_limit for lower case
 lower_limit_a     DS.B  1     ; lower_limit for lower case
 
 
-
-
-string_length   DS.B  1     ; one byte to store the string length
+test_count   DS.B  1     ; one byte to count
 
 
 
@@ -72,9 +70,6 @@ mainLoop:
             LDAA  #$7A
             STAA  upper_limit_z
             
-             
-            LDAA  #$10            
-            STAA  string_length         ; set string_length to 16
             
             LDX   #input_string
             LDY   #output_string1
@@ -155,14 +150,23 @@ changeLower:
 
 
 ; Begin Task 3
-task3_init
+task3_init:
 
             LDX   #input_string
             LDY   #output_string3            
           
+            LDAA  #0
+            STAA  test_count
       
-            
-            
+testA:       
+            LDAB  1,x+
+            LDAA  #0
+            CMPA  test_count
+            BNE   test3
+
+
+test3:
+            BRA   testA
             
 ; Begin Task 4
 task4_init
