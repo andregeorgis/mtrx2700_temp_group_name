@@ -28,8 +28,10 @@ output_string2   DS.B  16
 output_string3   DS.B  16
 output_string4   DS.B  16
 
-input_string    FCC   "thIS is a string"  ; make a string in memory
+input_string    FCC   "thIS i. a string"  ; make a string in memory
 null            FCB   0
+space           FCC   " "
+full_stop       FCC   "."
 
 upper_limit_Z     DS.B  1     ; upper_limit for lower case
 lower_limit_A     DS.B  1     ; lower_limit for lower case
@@ -69,6 +71,9 @@ mainLoop:
             
             LDAA  #$7A
             STAA  upper_limit_z
+            
+            LDAA  #0
+            STAA  test_count
             
             
             LDX   #input_string
@@ -155,30 +160,179 @@ task3_init:
             LDX   #input_string
             LDY   #output_string3            
           
-            LDAA  #0
-            STAA  test_count
+            STAB  $1056     ; transfer what's in Accumulator B to Accumulator A via a random location $1056
+            LDAA  $1056
       
 testA:       
             LDAB  1,x+
-            LDAA  #0
-            CMPA  test_count
-            BNE   test3
+            
+            CMPA  null
+            BEQ   cap_x
+            
+            CMPA  space
+            BEQ   cap_x
+            
+            CMPB   #$00
+            BEQ    task4_init
+            
+always_lower:
+            CMPB   lower_limit_A
+            BHS    c2
 
 
-test3:
+skip1: 
+            
+            STAB   0,y
+            INY
+            STAB  $1056
+            LDAA  $1056
+            BRA    testA       
+            
+
+c2:
+            
+            CMPB   upper_limit_Z
+            BLE    changeUp
+            
+            BRA    skip1
+            
+changeUp:
+            ADDB   #$20
+            STAB   0,y
+            INY
+            STAB  $1056
+            LDAA  $1056
+            BRA    testA
+
+cap_x:
+            CMPB  lower_limit_a
+            BHS   t2
+            
+skip:
+            STAB  0,y
+            INY
+            STAB  $1056
+            LDAA  $1056
             BRA   testA
+
+
+t2:
+            CMPB  upper_limit_z
+            BLE   changeLow
+            
+            BRA   skip
+            
+changeLow:
+            SUBB  #$20
+            STAB  0,y
+            INY
+            STAB  $1056
+            LDAA  $1056
+            BRA   testA
+            
+            
             
 ; Begin Task 4
 task4_init
 
             LDX   #input_string
             LDY   #output_string4  
+            STAB  $1056     ; transfer what's in Accumulator B to Accumulator A via a random location $1056
+            LDAA  $1056
+            
+            
+testB:       
+            LDAB  1,x+
+            
+            CMPA  null
+            BEQ   cap_x2
+            
+            CMPA  full_stop
+            BEQ   space_check
+      
+continue_routine:
+            
+            CMPB   #$00
+            BEQ    end_task
+            
+always_l:
+            
+            CMPB   lower_limit_A
+            BHS    c3
 
 
+skip2: 
+            
+            STAB   0,y
+            INY
+            STAB  $1056
+            LDAA  $1056
+            BRA   testB      
+            
+
+c3:
+            
+            CMPB   upper_limit_Z
+            BLE    changeUp2
+            
+            BRA    skip2
+            
+changeUp2:
+            ADDB   #$20
+            STAB   0,y
+            INY
+            STAB  $1056
+            LDAA  $1056
+            BRA    testB
+
+cap_x2:
+            
+            CMPB  lower_limit_a
+            BHS   t3
+            
+skip3:
+            STAB  0,y
+            INY
+            STAB  $1056
+            LDAA  $1056
+            BRA   testB
 
 
+t3:
+            CMPB  upper_limit_z
+            BLE   changeLower2
+            
+            BRA   skip3
+            
+changeLower2:
+            SUBB  #$20
+            STAB  0,y
+            INY
+            STAB  $1056
+            LDAA  $1056
+            BRA   testB
 
 
+space_check:
+
+            CMPB  space
+            BEQ   cap_after_full_stop
+            BRA   continue_routine
+            
+cap_after_full_stop:
+            
+            STAB  0,y
+            INY  
+            LDAB  1,x+
+            
+            
+            BRA   cap_x2
+
+
+end_task:
+
+            LDX   #input_string
+            LDY   #output_string3  
 
 
 ;**************************************************************
