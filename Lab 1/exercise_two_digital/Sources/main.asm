@@ -66,23 +66,14 @@ mainLoop:
             BRA     mainLoop
             
                
-
-delay:      NOP ; naive delay to make the LEDs brighter
-            NOP
-            NOP
-            NOP
-            NOP
-            NOP
-            NOP
-            NOP
-            NOP
-            NOP
-            NOP
-            NOP
-            NOP
-            NOP
-            NOP
-            RTS            
+; Delays the program for approximately 0.043 ms
+delay:      LDAA    #255
+            JSR     delayLoop
+            RTS
+            
+delayLoop:  DECA
+            BNE     delayLoop
+            RTS         
 
 ; Given a Current Number, find the segment code needed to draw it
 Lookup:     LDAA    CURR_NUM     ; grab the number

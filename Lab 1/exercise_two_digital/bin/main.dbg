@@ -8733,38 +8733,31 @@ mainLoop:
             BRA     mainLoop
             
                
+; Delays the program for a fraction of a ms
+delay:      LDAA    #255
+            JSR     delayLoop
+            RTS
+            
+delayLoop:  DECA
+            BNE     delayLoop
+            RTS         
 
-delay:      NOP ; naive delay to make the LEDs brighter
-            NOP
-            NOP
-            NOP
-            NOP
-            NOP
-            NOP
-            NOP
-            NOP
-            NOP
-            NOP
-            NOP
-            NOP
-            NOP
-            NOP
-            RTS            
-
-Lookup:     LDAA CURR_NUM     ; grab the number
-            LDAB A, X            ; convert to segment code
-            STAB CURR_CODE     ; store the segment code
+; Given a Current Number, find the segment code needed to draw it
+Lookup:     LDAA    CURR_NUM     ; grab the number
+            LDAB    A, X            ; convert to segment code
+            STAB    CURR_CODE     ; store the segment code
             RTS
 
 LookupAll:  NOP ; grab a string of numbers, give back a string of segment codes
 
-DrawOne:    LDAB CURR_CODE ; grab one segment code and specific LED, draw on a specific LED
-            LDAA CURR_SEG  ; grab the current segment
-            STAB PORTB        ; assign the number
-            STAA PTP          ; enable the current LED
-            BSR delay
-            LDAA #NO_SEG       
-            STAA PTP          ; disable all LEDs
+; Given a segment code and a specific segment, draw the number on the LED
+DrawOne:    LDAB    CURR_CODE    ; grab one segment code and specific LED, draw on a specific LED
+            LDAA    CURR_SEG     ; grab the current segment
+            STAB    PORTB        ; assign the number
+            STAA    PTP          ; enable the current LED
+            BSR     delay
+            LDAA    #NO_SEG       
+            STAA    PTP          ; disable all LEDs
             RTS
             
 
