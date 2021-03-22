@@ -8689,9 +8689,6 @@ ROMStart    EQU  $4000  ; absolute address to place my code/constant data
 ; variable/data section
 
             ORG RAMStart
- ; Insert here your data definition.
-Counter     DS.W 1
-FiboRes     DS.W 1
 
 ; Define enables for the 7 segments
 NO_SEG      EQU  $FF   ; value to enable no segments
@@ -8699,13 +8696,28 @@ FIRST_SEG   EQU  $FE   ; value to enable the first segment
 SECOND_SEG  EQU  $FD   ; value to enable the second segment
 THIRD_SEG   EQU  $FB   ; value to enable the third segment
 FOURTH_SEG  EQU  $F7   ; value to enable the fourth segment
-CURR_SEG    FCB  $0  ; current segment to draw to
+CURR_SEG    FCB  $0    ; current segment to draw to
 
 ; Define the lookup codes for every special character
-SEG_CODES   FCB $3F, $06, $5B, $4F, $66, $6D, $7D, $07, $7F, $6F, $77, $7C, $39, $5E, $79, $71
+SEG_CODES   FCB  $3F, $06, $5B, $4F, $66, $6D, $7D, $07, $7F, $6F, $77, $7C, $39, $5E, $79, $71
 CURR_NUM    FCB  $0  ; current number to draw
 CURR_CODE   FCB  $0  ; current seg code for the number to draw
 
+; Define a counter that will be used to time how long a string is displayed
+COUNTER     FDB  $0
+
+; Define the string to display
+STRING      FCC  "0123456789876543210" ; string to display
+NULL_A      FCB  13                    ; null terminator for above string
+LOOP_STRING FCC  "123456789"           ; string to display when button is pressed
+NULL_B      FCB  13                    ; null terminator for above string
+
+
+; Constants
+ASCII_ZERO      EQU  48    ; the ascii code for '0'
+COUNTER_START   EQU  3000  ; the counter starts at this value and decrements to 0
+ASCII_CR        EQU  13    ; the ascii code for the carriage return
+LOOP_CTR_START  EQU  12000 ; the counter starts at this value and decerements to 0 (for the loop caused by button press)
 
 ; code section
             ORG   ROMStart
@@ -8717,66 +8729,137 @@ _Startup:
 
             CLI                     ; enable interrupts
             
-; Configure the direction of ports
+; Configure the direction of ports and index registers
 configure:  LDAA    #$FF
             STAA    DDRB         ; Configure PORTB as output
             STAA    DDRP         ; Port P as output to enable 7 segments
-            LDX     #SEG_CODES   ; Store the Segment Codes
+            LDX     #SEG_CODES   ; Store all Segment Codes in Index Register X 
+
+; Wraps the main loop of the program (which we treat as a subroutine)          
+main:       JSR     configStrN
+            BRA     main         ; Should never reach here
             
+; Configure the index register for the string
+configStrM: LDY     #STRING      ; Store the string to display in Index Register Y
+
+
+; Configure the counter for timing how long to draw
+configCtrM: LDD     #COUNTER_START  ; Initialise the counter
+            STD     COUNTER
+
+; Calls other subroutines to draw specific output
 mainLoop:          
-            LDAB    #2
+            JSR     DrawString      ; Draw the stored string for approximately one second  (while we wait for counter to reach 0)
+            JSR     decCounter      ; Decrement counter
+            BNE     mainLoop        ; Loop until counter reaches 0
+            INY                     ; Increment our string
+            LDAB    3, Y            ; Check if the current string portion is 4 numbers long
+            JSR     checkString
+            BNE     configCtrM      ; If it is keep scrolling
+            RTS                     ; Otherwise end subroutine
+            
+; Configure the index register for the string
+configStrN: LDY     #LOOP_STRING    ; Store the string to display in Index Register Y
+
+
+; Configure the counter for timing how long to draw
+configCtrN: LDD     #LOOP_CTR_START ; Initialise the counter
+            STD     COUNTER
+
+; Calls other subroutines to draw specific output for the number loop caused by button press
+numberLoop:          
+            LDAB    0, Y            ; Find the seg code for the first number
+            SUBB    #ASCII_ZERO     ; We assume the string only has numbers
             STAB    CURR_NUM
-            BSR     Lookup
-            LDAB    #SECOND_SEG
+            JSR     Lookup
+            LDAB    #FIRST_SEG      ; Draw the first number for approximately a second (while we wait for counter to reach 0)
             STAB    CURR_SEG
-            BSR     DrawOne
-            BRA     mainLoop
-            
+            JSR     DrawOne
+            JSR     decCounter      ; Decrement counter
+            BNE     numberLoop      ; Loop until counter reaches 0
+            INY                     ; Increment our string
+            LDAB    0, Y            ; Check if we have reached the carriage return
+            JSR     checkString
+            BNE     configCtrN      ; If not keep looping
+            RTS                     ; Otherwise end the subroutine
+                                 
                
-
-delay:      NOP ; naive delay to make the LEDs brighter
-            NOP
-            NOP
-            NOP
-            NOP
-            NOP
-            NOP
-            NOP
-            NOP
-            NOP
-            NOP
-            NOP
-            NOP
-            NOP
-            NOP
-            RTS            
-
-Lookup:     LDAA CURR_NUM     ; grab the number
-            LDAB A, X            ; convert to segment code
-            STAB CURR_CODE     ; store the segment code
-            RTS
-
-LookupAll:  NOP ; grab a string of numbers, give back a string of segment codes
-
-DrawOne:    LDAB CURR_CODE ; grab one segment code and specific LED, draw on a specific LED
-            LDAA CURR_SEG  ; grab the current segment
-            STAB PORTB        ; assign the number
-            STAA PTP          ; enable the current LED
-            BSR delay
-            LDAA #NO_SEG       
-            STAA PTP          ; disable all LEDs
+; Delays the program for approximately 0.043 ms
+smallDelay: LDAA    #255
+            JSR     delayLoop
             RTS
             
+delayLoop:  DECA
+            BNE     delayLoop
+            RTS         
 
-DrawFour:   NOP ; grab four segment codes, draw on each LED
+; Given a Current Number, find the segment code needed to draw it
+Lookup:     LDAA    CURR_NUM     ; grab the number
+            LDAB    A, X            ; convert to segment code
+            STAB    CURR_CODE     ; store the segment code
+            RTS
+
+; Given a segment code and a specific segment, draw the number on the LED
+DrawOne:    LDAB    CURR_CODE    ; grab one segment code and specific LED, draw on a specific LED
+            LDAA    CURR_SEG     ; grab the current segment
+            STAB    PORTB        ; assign the number
+            STAA    PTP          ; enable the current LED
+            JSR     smallDelay
+            LDAA    #NO_SEG       
+            STAA    PTP          ; disable all LEDs
+            RTS
+            
+; Given a string, draw the first four characters
+DrawString: LDAB    0, Y          ; Find the seg code for the first number
+            SUBB    #ASCII_ZERO   ; We assume the string only has numbers
+            STAB    CURR_NUM
+            JSR     Lookup
+            LDAB    #FIRST_SEG    ; Draw the first number
+            STAB    CURR_SEG
+            JSR     DrawOne
+            LDAB    1, Y          ; Find the seg code for the second number
+            SUBB    #ASCII_ZERO   ; We assume the string only has numbers
+            STAB    CURR_NUM
+            JSR     Lookup
+            LDAB    #SECOND_SEG   ; Draw the first number
+            STAB    CURR_SEG
+            JSR     DrawOne
+            LDAB    2, Y          ; Find the seg code for the third number
+            SUBB    #ASCII_ZERO   ; We assume the string only has numbers
+            STAB    CURR_NUM
+            JSR     Lookup
+            LDAB    #THIRD_SEG    ; Draw the first number
+            STAB    CURR_SEG
+            JSR     DrawOne
+            LDAB    3, Y          ; Find the seg code for the fourth number
+            SUBB    #ASCII_ZERO   ; We assume the string only has numbers
+            STAB    CURR_NUM
+            JSR     Lookup
+            LDAB    #FOURTH_SEG   ; Draw the first number
+            STAB    CURR_SEG
+            JSR     DrawOne
+            RTS
+
+; Checks if we went past the end of the string
+checkString:CMPB    #ASCII_CR     ; Check if it is our null terminator
+            RTS
+
+; Decrements our counter            
+decCounter: LDD     COUNTER    ; Load the counter into D
+            CMPB    #0        
+            BNE     decSecond
+            
+decFirst:   DECA               ; If register B hits 0 we decrement A
+            
+decSecond:  DECB               ; Decrement B
+            STD     COUNTER
+            ORAB    COUNTER    ; Check if both A and B are zero (tells subroutine that called this one to stop)
+            RTS
+                   
 
 CheckButton:NOP ; see if the button active or deactive
-
-NumberLoop: NOP ; if button is pressed, this should keep showing all numbers on LED
-
-Scroll:     NOP ; grab a string, call LookupAll, keep calling DrawFour until end of string
-
-
+            
+ 
 
 ;**************************************************************
 ;*                 Interrupt Vectors                          *
