@@ -23,24 +23,23 @@ ROMStart    EQU  $4000  ; absolute address to place my code/constant data
 
             ORG RAMStart
 ; Insert here your data definition.
-output_string1   DS.B  16     ; allocate 16 bytes at the address output_string
-output_string2   DS.B  16
-output_string3   DS.B  16
-output_string4   DS.B  16
+output_string1   DS.B  16     ; allocate 16 bytes at the address output_string 1 for task 1
+output_string2   DS.B  16     ; allocate 16 bytes at the address output_string 2 for task 2
+output_string3   DS.B  16     ; allocate 16 bytes at the address output_string 3 for task 3
+output_string4   DS.B  16     ; allocate 16 bytes at the address output_string 4 for task 4
 
-input_string    FCC   "thIS i. a string"  ; make a string in memory
-null            FCB   0
-space           FCC   " "
-full_stop       FCC   "."
+input_string    FCC   "thIS i. a string"  ; make a string in memory, and the length of this string should not exceed the bytes for the output_string
+null            FCB   0                   ; set a null terminator at the end of the input_string
+space           FCC   " "                 ; define variable space with space 
+full_stop       FCC   "."                 ; define variable full_stop with full stop
 
-upper_limit_Z     DS.B  1     ; upper_limit for lower case
-lower_limit_A     DS.B  1     ; lower_limit for lower case
+upper_limit_Z     DS.B  1     ; upper_limit for upper case, which is Z
+lower_limit_A     DS.B  1     ; lower_limit for upper case, which is A
 
-upper_limit_z     DS.B  1     ; upper_limit for lower case
-lower_limit_a     DS.B  1     ; lower_limit for lower case
+upper_limit_z     DS.B  1     ; upper_limit for lower case, which is z
+lower_limit_a     DS.B  1     ; lower_limit for lower case, which is a
 
-
-test_count   DS.B  1     ; one byte to count
+previous_letter   DS.B  1     ; allocate memory for later use (storing the previous letter in this variable)
 
 
 
@@ -57,13 +56,13 @@ _Startup:
 
 
 mainLoop:    
-                                       ; first set all global variables
+                                          ; first, set all global variables
             
             LDAA  #$41
-            STAA  lower_limit_A           ; set lower_limit for lower case to $61
+            STAA  lower_limit_A           
             
             LDAA  #$5A
-            STAA  upper_limit_Z           ; set upper_limit for lower case to $7A
+            STAA  upper_limit_Z          
             
             
             LDAA  #$61
@@ -71,87 +70,93 @@ mainLoop:
             
             LDAA  #$7A
             STAA  upper_limit_z
-            
-            LDAA  #0
-            STAA  test_count
-            
-            
-            LDX   #input_string
-            LDY   #output_string1
+           
+task1_init:
+            LDX   #input_string           ; load the address of the start of the input_string to X
+            LDY   #output_string1         ; load the address of the start of the output_string1 to Y
             
 
 
 ; Begin Task 1
 
-check1:
+task1_Loop:
 
             LDAB   1, x+              ; Load the value of the current letter in input_string to Accumulator B
             CMPB   #$00
             BEQ    task2_init
             
-            
-            
-            CMPB   lower_limit_A
-            BHS    check2
-
-
-skipUpdate: 
-            
-            STAB   0,y
-            INY
-            BRA    check1       
-            
-
-check2:
-            
-            CMPB   upper_limit_Z
-            BLE    changeUpper
-            
-            BRA    skipUpdate
-            
-changeUpper:
-            ADDB   #$20
-            STAB   0,y
-            INY
-            BRA    check1  
-            
-                        
-
+            JSR    all_lower
+            BRA    task1_Loop
 
 ; Begin Task 2
+
 task2_init:
             
             LDX   #input_string
-            LDY   #output_string2
-            
+            LDY   #output_string2           
 
-test1:
+
+
+task2_Loop:
           
             LDAB   1, x+
             CMPB   #$00
             BEQ    task3_init
             
-            CMPB   lower_limit_a
-            BHS    test2
+            JSR    all_cap
+            BRA    task2_Loop
             
-skipUpdate2: 
-           
+; Subroutines:
+
+all_cap:
+            test1:
+                          CMPB   lower_limit_a
+                          BHS    test2
+            
+                          JSR    skip_update
+                          RTS
+            
+            test2:
+                          CMPB   upper_limit_z
+                          BLE    changeLower
+            
+                          BSR    skip_update
+            
+            changeLower:
+                          SUBB   #$20
+                          STAB   0,y
+                          INY
+                          RTS
+            
+all_lower:            
+            
+            check1:
+                          CMPB   lower_limit_A
+                          BHS    check2
+     
+                          JSR    skip_update
+                          RTS           
+            
+
+            check2:
+            
+                          CMPB   upper_limit_Z
+                          BLE    changeUpper
+            
+                          BSR    skip_update
+                          RTS    
+            
+            changeUpper:
+                          ADDB   #$20
+                          STAB   0,y
+                          INY
+                          RTS              
+
+skip_update:
+            
             STAB   0,y
             INY
-            BRA    test1
-            
-test2:
-            CMPB   upper_limit_z
-            BLE    changeLower
-            
-            BRA    skipUpdate2
-            
-changeLower:
-            SUBB   #$20
-            STAB   0,y
-            INY
-            BRA    test1
-            
+            RTS    
 
 
 ; Begin Task 3
@@ -160,10 +165,10 @@ task3_init:
             LDX   #input_string
             LDY   #output_string3            
           
-            STAB  $1056     ; transfer what's in Accumulator B to Accumulator A via a random location $1056
-            LDAA  $1056
+            STAB  previous_letter     ; transfer what's in Accumulator B to Accumulator A via a random location $1056
+            LDAA  previous_letter
       
-testA:       
+task3_loop:       
             LDAB  1,x+
             
             CMPA  null
@@ -173,63 +178,30 @@ testA:
             BEQ   cap_x
             
             CMPB   #$00
-            BEQ    task4_init
-            
-always_lower:
-            CMPB   lower_limit_A
-            BHS    c2
+            BEQ    task4_init   
+
+            JSR   lower_the_rest 
+            BRA   task3_loop
 
 
-skip1: 
-            
-            STAB   0,y
-            INY
-            STAB  $1056
-            LDAA  $1056
-            BRA    testA       
-            
+; subroutines for task 3 and 4
 
-c2:
+lower_the_rest:
             
-            CMPB   upper_limit_Z
-            BLE    changeUp
-            
-            BRA    skip1
-            
-changeUp:
-            ADDB   #$20
-            STAB   0,y
-            INY
-            STAB  $1056
-            LDAA  $1056
-            BRA    testA
+            JSR   all_lower
+            JSR   store_prev
+            RTS
+
 
 cap_x:
-            CMPB  lower_limit_a
-            BHS   t2
-            
-skip:
-            STAB  0,y
-            INY
-            STAB  $1056
-            LDAA  $1056
-            BRA   testA
+            JSR   all_cap
+            JSR   store_prev
+            BRA   task3_loop
 
-
-t2:
-            CMPB  upper_limit_z
-            BLE   changeLow
-            
-            BRA   skip
-            
-changeLow:
-            SUBB  #$20
-            STAB  0,y
-            INY
-            STAB  $1056
-            LDAA  $1056
-            BRA   testA
-            
+store_prev:
+            STAB  previous_letter
+            LDAA  previous_letter
+            RTS            
             
             
 ; Begin Task 4
@@ -237,11 +209,11 @@ task4_init
 
             LDX   #input_string
             LDY   #output_string4  
-            STAB  $1056     ; transfer what's in Accumulator B to Accumulator A via a random location $1056
-            LDAA  $1056
+            STAB  previous_letter     ; transfer what's in Accumulator B to Accumulator A via a random location $1056
+            LDAA  previous_letter
             
             
-testB:       
+task4_loop:       
             LDAB  1,x+
             
             CMPA  null
@@ -251,88 +223,34 @@ testB:
             BEQ   space_check
       
 continue_routine:
-            
             CMPB   #$00
             BEQ    end_task
             
-always_l:
-            
-            CMPB   lower_limit_A
-            BHS    c3
-
-
-skip2: 
-            
-            STAB   0,y
-            INY
-            STAB  $1056
-            LDAA  $1056
-            BRA   testB      
-            
-
-c3:
-            
-            CMPB   upper_limit_Z
-            BLE    changeUp2
-            
-            BRA    skip2
-            
-changeUp2:
-            ADDB   #$20
-            STAB   0,y
-            INY
-            STAB  $1056
-            LDAA  $1056
-            BRA    testB
+            JSR   lower_the_rest
+            BRA   task4_loop            
 
 cap_x2:
-            
-            CMPB  lower_limit_a
-            BHS   t3
-            
-skip3:
-            STAB  0,y
-            INY
-            STAB  $1056
-            LDAA  $1056
-            BRA   testB
-
-
-t3:
-            CMPB  upper_limit_z
-            BLE   changeLower2
-            
-            BRA   skip3
-            
-changeLower2:
-            SUBB  #$20
-            STAB  0,y
-            INY
-            STAB  $1056
-            LDAA  $1056
-            BRA   testB
-
+            JSR   all_cap
+            JSR   store_prev
+            BRA   task4_loop
 
 space_check:
 
             CMPB  space
             BEQ   cap_after_full_stop
             BRA   continue_routine
-            
+
 cap_after_full_stop:
             
             STAB  0,y
             INY  
             LDAB  1,x+
-            
-            
             BRA   cap_x2
-
 
 end_task:
 
             LDX   #input_string
-            LDY   #output_string3  
+            LDY   #input_string
 
 
 ;**************************************************************
