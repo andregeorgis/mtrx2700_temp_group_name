@@ -40,7 +40,7 @@ CURR_CODE   FCB  $0  ; current seg code for the number to draw
 COUNTER     FDB  $0
 
 ; Define the string to display
-STRING      FCC  "0123456789876543210" ; string to display
+STRING      FCC  "012345678987654321012" ; string to display
 NULL_A      FCB  13                    ; null terminator for above string
 LOOP_STRING FCC  "123456789"           ; string to display when button is pressed
 NULL_B      FCB  13                    ; null terminator for above string
@@ -199,9 +199,7 @@ decSecond:  DECB               ; Decrement B
             STD     COUNTER
             ORAB    COUNTER    ; Check if both A and B are zero (tells subroutine that called this one to stop)
             RTS
-                   
-
-CheckButton:NOP ; see if the button active or deactive
+                  
             
  
 
