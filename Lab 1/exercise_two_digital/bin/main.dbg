@@ -8718,6 +8718,7 @@ ASCII_ZERO      EQU  48    ; the ascii code for '0'
 COUNTER_START   EQU  3000  ; the counter starts at this value and decrements to 0
 ASCII_CR        EQU  13    ; the ascii code for the carriage return
 LOOP_CTR_START  EQU  12000 ; the counter starts at this value and decerements to 0 (for the loop caused by button press)
+BUTTON_ON       EQU  $FE   ; the button is on if this is the value read
 
 ; code section
             ORG   ROMStart
@@ -8733,11 +8734,17 @@ _Startup:
 configure:  LDAA    #$FF
             STAA    DDRB         ; Configure PORTB as output
             STAA    DDRP         ; Port P as output to enable 7 segments
+            LDAA    #$00
+            STAA    DDRH         ; Configure PORTH as input
             LDX     #SEG_CODES   ; Store all Segment Codes in Index Register X 
 
 ; Wraps the main loop of the program (which we treat as a subroutine)          
-main:       JSR     configStrN
-            BRA     main         ; Should never reach here
+main:       
+            LDAA    PTH          ; Check if the button is on
+            CMPA    #BUTTON_ON   
+            BEQ     configStrN   ; If it is on, do the number loop
+            JSR     configStrM   ; If it is not on, keep scrolling
+            BRA     main
             
 ; Configure the index register for the string
 configStrM: LDY     #STRING      ; Store the string to display in Index Register Y
@@ -8749,6 +8756,9 @@ configCtrM: LDD     #COUNTER_START  ; Initialise the counter
 
 ; Calls other subroutines to draw specific output
 mainLoop:          
+            LDAA    PTH             ; Check if the button is on, if it is, end the loop early
+            CMPA    #BUTTON_ON      
+            BEQ     endMainLoop  
             JSR     DrawString      ; Draw the stored string for approximately one second  (while we wait for counter to reach 0)
             JSR     decCounter      ; Decrement counter
             BNE     mainLoop        ; Loop until counter reaches 0
@@ -8756,7 +8766,8 @@ mainLoop:
             LDAB    3, Y            ; Check if the current string portion is 4 numbers long
             JSR     checkString
             BNE     configCtrM      ; If it is keep scrolling
-            RTS                     ; Otherwise end subroutine
+            
+endMainLoop:RTS                     ; Otherwise end subroutine
             
 ; Configure the index register for the string
 configStrN: LDY     #LOOP_STRING    ; Store the string to display in Index Register Y
@@ -8781,7 +8792,7 @@ numberLoop:
             LDAB    0, Y            ; Check if we have reached the carriage return
             JSR     checkString
             BNE     configCtrN      ; If not keep looping
-            RTS                     ; Otherwise end the subroutine
+            BRA     main            ; Go back to the main loop
                                  
                
 ; Delays the program for approximately 0.043 ms
