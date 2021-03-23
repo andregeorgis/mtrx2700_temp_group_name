@@ -15,6 +15,10 @@ Andre Georgis - Exercise 3 Serial Input/Output
 
 #### Code Functionality
 The code is broken up into four task sections with two blocks of subroutines. 
+The first task block changes the letters to lowercase. 
+The second task block changes the letters to uppercase. 
+The third task block changes the first letter of each word to uppercase and rest lowercase. A word is defined as string of letters between two special characters, which is usually two spaces but it can have a full stop at the end.
+The fourth task block changes the first letter of each sentence to uppercase and the rest lowercase. A sentence is defined as a string of characters between first letter and a full stop for the first sentence and from full stop to full stop for other sentences.
 
 #### Code Modularity
 The main code is broken up into four sections in order of which is task is mean to be completed. Each of these sections would perform one task and the next task can't be performed until the current task is completed. So task two can only start if task one is completed, task three can only start if task two is completed and task four can only start once task three is finished. The subroutines are also set into two blocks depending on how many tasks require it, similar roles they perform and their relative location. In our case, the subroutine to transform letters into uppercase or lowercase would be used by all tasks at some point, but the storing the previous character would only be used by tasks 3 and 4.
