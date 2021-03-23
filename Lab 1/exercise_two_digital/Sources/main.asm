@@ -42,7 +42,7 @@ COUNTER     FDB  $0
 ; Define the string to display
 STRING      FCC  "012345678987654321012" ; string to display
 NULL_A      FCB  13                    ; null terminator for above string
-LOOP_STRING FCC  "123456789"           ; string to display when button is pressed
+LOOP_STRING FCC  "0123456789"           ; string to display when button is pressed
 NULL_B      FCB  13                    ; null terminator for above string
 
 
@@ -51,7 +51,7 @@ ASCII_ZERO      EQU  48    ; the ascii code for '0'
 COUNTER_START   EQU  3000  ; the counter starts at this value and decrements to 0
 ASCII_CR        EQU  13    ; the ascii code for the carriage return
 LOOP_CTR_START  EQU  12000 ; the counter starts at this value and decerements to 0 (for the loop caused by button press)
-BUTTON_ON       EQU  $FE   ; the button is on if this is the value read
+BUTTON_ON       EQU  $FE   ; the button is on if this is the value read (input as $FE when Port H all switch on by pull up SW1, and the press button PH0/SW5 pressed down)
 
 ; code section
             ORG   ROMStart
