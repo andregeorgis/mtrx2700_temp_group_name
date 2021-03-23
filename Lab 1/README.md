@@ -14,10 +14,10 @@ Andre Georgis - Exercise 3 Serial Input/Output
 ## Exercise 1 Memory and Pointers
 
 #### Code Functionality
-
+The code is broken up into four task sections with two blocks of subroutines. 
 
 #### Code Modularity
-The main code is broken up into four sections in order of which is task is mean to be completed. Each of these sections would perform one task and the next task can't be performed until the current task is completed. The subroutines are also set into their blocks depending on how many tasks require it, similar roles they perform and their relative location. In our case, the subroutine to transform letters into uppercase or lowercase would be used by all tasks at some point, but the storing the previous character would only be used by tasks 3 and 4.
+The main code is broken up into four sections in order of which is task is mean to be completed. Each of these sections would perform one task and the next task can't be performed until the current task is completed. So task two can only start if task one is completed, task three can only start if task two is completed and task four can only start once task three is finished. The subroutines are also set into two blocks depending on how many tasks require it, similar roles they perform and their relative location. In our case, the subroutine to transform letters into uppercase or lowercase would be used by all tasks at some point, but the storing the previous character would only be used by tasks 3 and 4.
 
 #### Instructions
 1. Memory has been allocated for the required output strings, as a result of transforming the input string and required variables that are either stored of constantly checking over throughout.
