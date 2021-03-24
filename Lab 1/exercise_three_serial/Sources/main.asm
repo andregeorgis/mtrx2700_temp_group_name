@@ -23,6 +23,7 @@ ROMStart    EQU  $4000  ; absolute address to place my code/constant data
 
             ORG RAMStart
 ; String and ASCII definitions
+STRING_IN   DS.B  100
 STRING      FCC   "Hello, World!"
 NL_A        FCB    10
 CR_A        FCB    13
@@ -46,11 +47,13 @@ config:     LDD   #$9C
             STD   SCI1BD
             LDAA  #$00
             STAA  SCI1CR1
-            LDAA  #$0C
+            LDAA  #$04
             STAA  SCI1CR2
             
-delay:
-            LDAB  #100
+main:       BRA   configStr
+            BRA   main
+            
+delay:      LDAB  #100
             STAB  $1010
 
 
@@ -65,18 +68,32 @@ Loopc:      INC   $1012
             INC   $1010
             BNE   Loopa
             
-configStr:  LDY   #STRING
+;configStr:  LDY   #STRING
 
-mainLoop:   LDAA  SCI1SR1
-            ANDA  #$80
-            BEQ   mainLoop
-            LDAA  0, Y
-            STAA  SCI1DRL
-            CMPA  #ASCII_CR
-            BEQ   delay
-            INY
-            BRA   mainLoop
-            
+;transmLoop: LDAA  SCI1SR1
+;            ANDA  #$80
+;            BEQ   transmLoop
+;            LDAA  0, Y
+;            STAA  SCI1DRL
+;            CMPA  #ASCII_CR
+;            BEQ   delay
+;            INY
+;            BRA   transmLoop
+ 
+
+configStr:   LDY   #STRING_IN   
+
+readLoop:    LDAA  SCI1SR1
+             ANDA  #$20
+             BEQ   readLoop
+             LDAA  SCI1DRL
+             STAA  0, Y
+             CMPA  #ASCII_CR
+             BEQ   delay
+             INY
+             BRA   readLoop
+              
+           
 
 ;**************************************************************
 ;*                 Interrupt Vectors                          *
