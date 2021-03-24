@@ -22,13 +22,18 @@ ROMStart    EQU  $4000  ; absolute address to place my code/constant data
 ; variable/data section
 
             ORG RAMStart
- ; Insert here your data definition.
-Counter     DS.W 1
-FiboRes     DS.W 1
+; String and ASCII definitions
+STRING      FCC   "Hello, World!"
+NL_A        FCB    10
+CR_A        FCB    13
 
+; Constants
+ASCII_NL    EQU    10
+ASCII_CR    EQU    13
 
 ; code section
             ORG   ROMStart
+
 
 
 Entry:
@@ -36,28 +41,42 @@ _Startup:
             LDS   #RAMEnd+1       ; initialize the stack pointer
 
             CLI                     ; enable interrupts
-mainLoop:
-            LDX   #1              ; X contains counter
-couterLoop:
-            STX   Counter         ; update global.
-            BSR   CalcFibo
-            STD   FiboRes         ; store result
-            LDX   Counter
-            INX
-            CPX   #24             ; larger values cause overflow.
-            BNE   couterLoop
-            BRA   mainLoop        ; restart.
 
-CalcFibo:  ; Function to calculate fibonacci numbers. Argument is in X.
-            LDY   #$00            ; second last
-            LDD   #$01            ; last
-            DBEQ  X,FiboDone      ; loop once more (if X was 1, were done already)
-FiboLoop:
-            LEAY  D,Y             ; overwrite second last with new value
-            EXG   D,Y             ; exchange them -> order is correct again
-            DBNE  X,FiboLoop
-FiboDone:
-            RTS                   ; result in D
+config:     LDD   #$9C
+            STD   SCI1BD
+            LDAA  #$00
+            STAA  SCI1CR1
+            LDAA  #$0C
+            STAA  SCI1CR2
+            
+delay:
+            LDAB  #100
+            STAB  $1010
+
+
+Loopa:      STAB  $1011
+Loopb:      STAB  $1012
+Loopc:      INC   $1012
+            BNE   Loopc
+
+            INC   $1011
+            BNE   Loopb
+
+            INC   $1010
+            BNE   Loopa
+            
+configStr:  LDY   #STRING
+
+mainLoop:   LDAA  SCI1SR1
+            ANDA  #$80
+            BEQ   mainLoop
+            LDAA  0, Y
+            STAA  SCI1DRL
+            CMPA  #ASCII_CR
+            BEQ   delay
+            INY
+            BRA   mainLoop
+            
 
 ;**************************************************************
 ;*                 Interrupt Vectors                          *
