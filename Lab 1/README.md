@@ -15,9 +15,9 @@ Andre Georgis - Exercise 3 Serial Input/Output
 
 #### Code Functionality
 The code is broken up into four task sections with two blocks of subroutines. 
-The first task block changes the letters to lowercase. 
-The second task block changes the letters to uppercase. 
-The third task block changes the first letter of each word to uppercase and rest lowercase. A word is defined as string of letters between two special characters, which is usually two spaces but it can have a full stop at the end.
+The first task block changes the letters to lowercase. The code would check along each character in the input string. If the current character being checked is an uppercase letter, the code jump into a subroutine to change it into lowercase. Otherwise, the character would be printed onto the output string. The code would then check the next character in the string and the process repeats until the end of the string is reached.
+The second task block changes the letters to uppercase. THe code would check along each character in the input string. The character would be printed onto the output string unless if the character being checked is lowercase which is changed to uppercase. THe code would usually branch through different condition branches which determine if the character needs to be transformed.
+The third task block changes the first letter of each word to uppercase and rest lowercase. A word is defined as string of letters between two special characters, which is usually two spaces but it can have a full stop at the end. THe code would also store the value of the previous character. This is because it needs to recognise a space  character to determine if the the charcater needs to be capitalised. 
 The fourth task block changes the first letter of each sentence to uppercase and the rest lowercase. A sentence is defined as a string of characters between first letter and a full stop for the first sentence and from full stop to full stop for other sentences.
 
 #### Code Modularity
