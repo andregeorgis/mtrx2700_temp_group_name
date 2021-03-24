@@ -44,6 +44,8 @@ The testing process involves entering an input string that fits within the memor
 
 
 #### Code Modularity
+The code is separated based on the certain roles each section does.
+One major section is defining the variables and memory allocation which the code would call upon throughout the simulation. This is further broken down grouping them according to the role. One defines each one of the four 7-seg LEDS. Another subsection represents codes representing characters 0-9 and A-F which would be displayed on each LED segment. One defines the counter, one has two input strings which would represented in different situations and other constants.
 
 
 #### Instructions
