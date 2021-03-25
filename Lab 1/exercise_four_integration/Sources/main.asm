@@ -37,6 +37,9 @@ previous_letter   DS.B  1     ; allocate memory for later use (storing the previ
 ; Constants
 ASCII_NL    EQU    10
 ASCII_CR    EQU    13
+ASCII_SP    EQU    32
+BUTTON_ON   EQU    $FE   ; the button is on if this is the value read (input as $FE when Port H all switch on by pull up SW1, and the press button PH0/SW5 pressed down)
+
 
 ; code section
             ORG   ROMStart
@@ -64,13 +67,16 @@ mainLoop:
             LDAA  #$7A
             STAA  upper_limit_z            
             
-config:     LDD   #$9C           ; Config Serial
+config:     LDAA  #$00
+            STAA  DDRH           ; Configure PORTH as input
+
+            LDD   #$9C           ; Config Serial
             STD   SCI1BD
             LDAA  #$00
             STAA  SCI1CR1
             LDAA  #$0C
             STAA  SCI1CR2
-            
+             
                         
 configStrR: LDX   #STRING_IN     ; Keep reading until we get a carriage return
 
@@ -80,7 +86,7 @@ readLoop:   LDAA  SCI1SR1
             LDAA  SCI1DRL
             STAA  0, X
             CMPA  #ASCII_CR      ; If we get a carriage return, modify string
-            BEQ   upperCase
+            BEQ   modString
             INX
             BRA   readLoop
                         
@@ -96,8 +102,13 @@ transmLoop: LDAA  SCI1SR1
             INX
             BRA   transmLoop            
             
-upperCase:  LDX   #STRING_IN
+modString:  LDX   #STRING_IN
             LDY   #STRING_MOD
+            LDAA  #$00          ; Indicate start of string
+            LDAB  PTH          ; Check if the button is on
+            CMPB  #BUTTON_ON
+            BEQ   capLoop      ; If so capitalise string, otherwise uppercase
+            
             
 upperLoop:
             LDAB  0, X
@@ -106,6 +117,23 @@ upperLoop:
             CMPB  #ASCII_CR
             BEQ   configStrT     ; Once we finish modifying, transmit the modified string
             BRA   upperLoop
+            
+capLoop: ; In this routine, A is previous letter and B is current letter       
+            LDAB  0, X
+            INX
+            
+            CMPA  #$00           ; Capitalise start of string
+            BEQ   cap_x
+            
+            CMPA  #ASCII_SP      ; Capitalise after space
+            BEQ   cap_x
+            
+            JSR   lower_the_rest 
+            
+            CMPB  #ASCII_CR      ; Once we finish modifying, transmit the modified string
+            BEQ   configStrT
+            
+            BRA   capLoop
             
 ; Subroutines:
 
@@ -159,6 +187,26 @@ skip_update:
             STAB   0,y
             INY
             RTS
+            
+            
+; subroutines for task 3 and 4
+
+lower_the_rest:
+            
+            JSR   all_lower
+            JSR   store_prev
+            RTS
+
+
+cap_x:
+            JSR   all_cap
+            JSR   store_prev
+            BRA   capLoop
+
+store_prev:
+            STAB  previous_letter
+            LDAA  previous_letter
+            RTS             
 
 ;**************************************************************
 ;*                 Interrupt Vectors                          *
