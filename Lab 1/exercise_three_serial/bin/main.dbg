@@ -8714,51 +8714,34 @@ config:     LDD   #$9C
             STD   SCI1BD
             LDAA  #$00
             STAA  SCI1CR1
-            LDAA  #$04
+            LDAA  #$0C
             STAA  SCI1CR2
             
-main:       BRA   configStr
-            BRA   main
+                        
+configStrR: LDX   #STRING_IN   
+
+readLoop:   LDAA  SCI1SR1
+            ANDA  #$20
+            BEQ   readLoop
+            LDAA  SCI1DRL
+            STAA  0, X
+            CMPA  #ASCII_CR
+            BEQ   configStrT
+            INX
+            BRA   readLoop
+           
             
-delay:      LDAB  #100
-            STAB  $1010
+configStrT: LDX   #STRING_IN
 
-
-Loopa:      STAB  $1011
-Loopb:      STAB  $1012
-Loopc:      INC   $1012
-            BNE   Loopc
-
-            INC   $1011
-            BNE   Loopb
-
-            INC   $1010
-            BNE   Loopa
-            
-;configStr:  LDY   #STRING
-
-;transmLoop: LDAA  SCI1SR1
-;            ANDA  #$80
-;            BEQ   transmLoop
-;            LDAA  0, Y
-;            STAA  SCI1DRL
-;            CMPA  #ASCII_CR
-;            BEQ   delay
-;            INY
-;            BRA   transmLoop
- 
-
-configStr:   LDY   #STRING_IN   
-
-readLoop:    LDAA  SCI1SR1
-             ANDA  #$20
-             BEQ   readLoop
-             LDAA  SCI1DRL
-             STAA  0, Y
-             CMPA  #ASCII_CR
-             BEQ   delay
-             INY
-             BRA   readLoop
+transmLoop: LDAA  SCI1SR1
+            ANDA  #$80
+            BEQ   transmLoop
+            LDAA  0, X
+            STAA  SCI1DRL
+            CMPA  #ASCII_CR
+            BEQ   configStrR
+            INX
+            BRA   transmLoop
               
            
 
