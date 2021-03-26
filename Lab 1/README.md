@@ -66,3 +66,17 @@ One major section is defining the variables and memory allocation which the code
 
 
 #### Testing Procedures
+
+
+## Exercise 4 Integration
+
+#### Code Functionality
+
+
+#### Code Modularity
+
+
+#### Instructions
+
+
+#### Testing Procedures
