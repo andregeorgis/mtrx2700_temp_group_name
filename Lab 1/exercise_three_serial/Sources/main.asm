@@ -31,6 +31,15 @@ CR_A        FCB    13
 ASCII_NL    EQU    10
 ASCII_CR    EQU    13
 
+BAUD_RATE   EQU    $9C
+CR_1        EQU    $00
+CR_2        EQU    $0C
+
+STATUS_1    EQU    $20
+STATUS_2    EQU    $80
+
+
+
 ; code section
             ORG   ROMStart
 
@@ -40,20 +49,20 @@ Entry:
 _Startup:
             LDS   #RAMEnd+1       ; initialize the stack pointer
 
-            CLI                     ; enable interrupts
+            CLI                   ; enable interrupts
 
-config:     LDD   #$9C
+config:     LDD   #BAUD_RATE            ; configure the serial port
             STD   SCI1BD
-            LDAA  #$00
+            LDAA  #CR_1
             STAA  SCI1CR1
-            LDAA  #$0C
+            LDAA  #CR_2
             STAA  SCI1CR2
             
                         
 configStrR: LDX   #STRING_IN   
 
 readLoop:   LDAA  SCI1SR1
-            ANDA  #$20
+            ANDA  #STATUS_1
             BEQ   readLoop
             LDAA  SCI1DRL
             STAA  0, X
@@ -66,7 +75,7 @@ readLoop:   LDAA  SCI1SR1
 configStrT: LDX   #STRING_IN
 
 transmLoop: LDAA  SCI1SR1
-            ANDA  #$80
+            ANDA  #STATUS_2
             BEQ   transmLoop
             LDAA  0, X
             STAA  SCI1DRL
