@@ -48,9 +48,9 @@ NULL_B      FCB  13                    ; null terminator for above string
 
 ; Constants
 ASCII_ZERO      EQU  48    ; the ascii code for '0'
-COUNTER_START   EQU  3000  ; the counter starts at this value and decrements to 0
+COUNTER_START   EQU  6000  ; the counter starts at this value and decrements to 0
 ASCII_CR        EQU  13    ; the ascii code for the carriage return
-LOOP_CTR_START  EQU  12000 ; the counter starts at this value and decerements to 0 (for the loop caused by button press)
+LOOP_CTR_START  EQU  24000 ; the counter starts at this value and decerements to 0 (for the loop caused by button press)
 BUTTON_ON       EQU  $FE   ; the button is on if this is the value read (input as $FE when Port H all switch on by pull up SW1, and the press button PH0/SW5 pressed down)
 
 ; code section
@@ -190,14 +190,8 @@ checkString:CMPB    #ASCII_CR     ; Check if it is our null terminator
 
 ; Decrements our counter            
 decCounter: LDD     COUNTER    ; Load the counter into D
-            CMPB    #0        
-            BNE     decSecond
-            
-decFirst:   DECA               ; If register B hits 0 we decrement A
-            
-decSecond:  DECB               ; Decrement B
-            STD     COUNTER
-            ORAB    COUNTER    ; Check if both A and B are zero (tells subroutine that called this one to stop)
+            SUBD    #1         ; Decrement
+            STD     COUNTER    ; Store back into counter
             RTS
                   
             
