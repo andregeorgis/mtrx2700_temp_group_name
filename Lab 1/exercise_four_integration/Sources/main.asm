@@ -139,6 +139,7 @@ capLoop: ; In this routine, A is previous letter and B is current letter
 ;**************************************************************
 ;*                      Subroutines                           *
 ;**************************************************************
+
 all_cap:
             test1:
                           CMPB   lower_limit_a
