@@ -54,13 +54,14 @@ _Startup:
 
             CLI                     ; enable interrupts
 
+;**************************************************************
+;*                    Task 1 Block                            *
+;**************************************************************
+
 task1_init:
             LDX   #input_string           ; load the address of the start of the input_string to X
             LDY   #output_string1         ; load the address of the start of the output_string1 to Y
             
-
-
-; Begin Task 1
 
 task1_loop:
 
@@ -71,8 +72,9 @@ task1_loop:
             JSR    all_lower
             BRA    task1_loop
 
-; Begin Task 2
-
+;**************************************************************
+;*                    Task 2 block                            *
+;**************************************************************
 task2_init:
             
             LDX   #input_string
@@ -89,7 +91,9 @@ task2_loop:
             JSR    all_cap
             BRA    task2_loop
             
-; Subroutines:
+;**************************************************************
+;*                 Subroutine block 1                         *
+;**************************************************************
 
 all_cap:
             test1:
@@ -142,8 +146,10 @@ skip_update:
             INY
             RTS    
 
+;**************************************************************
+;*                     Task 3 block                           *
+;**************************************************************
 
-; Begin Task 3
 task3_init:
 
             LDX   #input_string
@@ -168,7 +174,9 @@ task3_loop:
             BRA   task3_loop
 
 
-; subroutines for task 3 and 4
+;**************************************************************
+;*             Subroutines for task 3 and 4                   *
+;**************************************************************
 
 lower_the_rest:
             
@@ -187,8 +195,10 @@ store_prev:
             LDAA  previous_letter
             RTS            
             
-            
-; Begin Task 4
+;**************************************************************
+;*                       Task 4 Block                         *
+;**************************************************************            
+
 task4_init
 
             LDX   #input_string
