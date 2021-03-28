@@ -26,11 +26,11 @@ ROMStart    EQU  $4000  ; absolute address to place my code/constant data
 STRING_IN   DS.B  100
 STRING_MOD  DS.B  100
 
-upper_limit_Z     DS.B  1     ; upper_limit for upper case, which is Z
-lower_limit_A     DS.B  1     ; lower_limit for upper case, which is A
+upper_limit_Z     FCB $5A     ; upper_limit for upper case, which is Z
+lower_limit_A     FCB $41     ; lower_limit for upper case, which is A
 
-upper_limit_z     DS.B  1     ; upper_limit for lower case, which is z
-lower_limit_a     DS.B  1     ; lower_limit for lower case, which is a
+upper_limit_z     FCB $7A     ; upper_limit for lower case, which is z
+lower_limit_a     FCB $61     ; lower_limit for lower case, which is a
 
 previous_letter   DS.B  1     ; allocate memory for later use (storing the previous letter in this variable)
 
@@ -38,8 +38,18 @@ previous_letter   DS.B  1     ; allocate memory for later use (storing the previ
 ASCII_NL    EQU    10
 ASCII_CR    EQU    13
 ASCII_SP    EQU    32
+START_STR   EQU    0
+CASE_GAP    EQU    $20
 BUTTON_ON   EQU    $FE   ; the button is on if this is the value read (input as $FE when Port H all switch on by pull up SW1, and the press button PH0/SW5 pressed down)
 
+; Serial port configurations
+BAUD_RATE   EQU    $9C
+CR_1        EQU    $00
+CR_2        EQU    $0C
+FLAG_1      EQU    $20
+FLAG_2      EQU    $80
+
+PORT_ON     EQU    $00
 
 ; code section
             ORG   ROMStart
@@ -50,38 +60,22 @@ _Startup:
             LDS   #RAMEnd+1       ; initialize the stack pointer
 
             CLI                     ; enable interrupts
-            
-mainLoop:    
-                                          ; first, set all global variables
-            
-            LDAA  #$41
-            STAA  lower_limit_A           
-            
-            LDAA  #$5A
-            STAA  upper_limit_Z          
-            
-            
-            LDAA  #$61
-            STAA  lower_limit_a
-            
-            LDAA  #$7A
-            STAA  upper_limit_z            
-            
-config:     LDAA  #$00
+   
+config:     LDAA  #PORT_ON
             STAA  DDRH           ; Configure PORTH as input
 
-            LDD   #$9C           ; Config Serial
+            LDD   #BAUD_RATE           ; Config Serial
             STD   SCI1BD
-            LDAA  #$00
+            LDAA  #CR_1
             STAA  SCI1CR1
-            LDAA  #$0C
+            LDAA  #CR_2
             STAA  SCI1CR2
              
                         
 configStrR: LDX   #STRING_IN     ; Keep reading until we get a carriage return
 
 readLoop:   LDAA  SCI1SR1
-            ANDA  #$20
+            ANDA  #FLAG_1
             BEQ   readLoop
             LDAA  SCI1DRL
             STAA  0, X
@@ -93,7 +87,7 @@ readLoop:   LDAA  SCI1SR1
 configStrT: LDX   #STRING_MOD
 
 transmLoop: LDAA  SCI1SR1
-            ANDA  #$80
+            ANDA  #FLAG_2
             BEQ   transmLoop
             LDAA  0, X
             STAA  SCI1DRL
@@ -104,7 +98,7 @@ transmLoop: LDAA  SCI1SR1
             
 modString:  LDX   #STRING_IN
             LDY   #STRING_MOD
-            LDAA  #$00          ; Indicate start of string
+            LDAA  #START_STR   ; Indicate start of string
             LDAB  PTH          ; Check if the button is on
             CMPB  #BUTTON_ON
             BEQ   capLoop      ; If so capitalise string, otherwise uppercase
@@ -122,7 +116,7 @@ capLoop: ; In this routine, A is previous letter and B is current letter
             LDAB  0, X
             INX
             
-            CMPA  #$00           ; Capitalise start of string
+            CMPA  #START_STR     ; Capitalise start of string
             BEQ   cap_x
             
             CMPA  #ASCII_SP      ; Capitalise after space
@@ -153,7 +147,7 @@ all_cap:
                           RTS
             
             changeLower:
-                          SUBB   #$20
+                          SUBB   #CASE_GAP
                           STAB   0,y
                           INY
                           RTS
@@ -177,7 +171,7 @@ all_lower:
                           RTS    
             
             changeUpper:
-                          ADDB   #$20
+                          ADDB   #CASE_GAP
                           STAB   0,y
                           INY
                           RTS               
