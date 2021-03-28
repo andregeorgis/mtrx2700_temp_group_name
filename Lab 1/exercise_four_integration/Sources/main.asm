@@ -71,7 +71,10 @@ config:     LDAA  #PORT_ON
             LDAA  #CR_2
             STAA  SCI1CR2
              
-                        
+;**************************************************************
+;*                  Reading function                          *
+;************************************************************** 
+
 configStrR: LDX   #STRING_IN     ; Keep reading until we get a carriage return
 
 readLoop:   LDAA  SCI1SR1
@@ -83,7 +86,11 @@ readLoop:   LDAA  SCI1SR1
             BEQ   modString
             INX
             BRA   readLoop
-                        
+ 
+;**************************************************************
+;*                 Transmission function                      *
+;************************************************************** 
+ 
 configStrT: LDX   #STRING_MOD
 
 transmLoop: LDAA  SCI1SR1
@@ -129,8 +136,9 @@ capLoop: ; In this routine, A is previous letter and B is current letter
             
             BRA   capLoop
             
-; Subroutines:
-
+;**************************************************************
+;*                      Subroutines                           *
+;**************************************************************
 all_cap:
             test1:
                           CMPB   lower_limit_a
@@ -183,7 +191,9 @@ skip_update:
             RTS
             
             
-; subroutines for task 3 and 4
+;**************************************************************
+;*                  Other subroutines                         *
+;**************************************************************
 
 lower_the_rest:
             
