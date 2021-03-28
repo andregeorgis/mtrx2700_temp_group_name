@@ -24,7 +24,6 @@ ROMStart    EQU  $4000  ; absolute address to place my code/constant data
             ORG RAMStart
 ; String and ASCII definitions
 STRING_IN   DS.B  100
-STRING      FCC   "Hello, World!"
 NL_A        FCB    10
 CR_A        FCB    13
 
