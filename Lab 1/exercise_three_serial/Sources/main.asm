@@ -58,7 +58,11 @@ config:     LDD   #BAUD_RATE            ; configure the serial port
             LDAA  #CR_2
             STAA  SCI1CR2
             
-                        
+
+;**************************************************************
+;*                   Reading Function                         *
+;**************************************************************
+
 configStrR: LDX   #STRING_IN   
 
 readLoop:   LDAA  SCI1SR1
@@ -70,7 +74,10 @@ readLoop:   LDAA  SCI1SR1
             BEQ   configStrT
             INX
             BRA   readLoop
-           
+  
+;**************************************************************
+;*                 Transmission Function                      *
+;**************************************************************  
             
 configStrT: LDX   #STRING_IN
 
