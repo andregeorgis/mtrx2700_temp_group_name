@@ -14,7 +14,7 @@ For a user's perspective, only refer to the **Usability** sub-section. For a mar
 
 
 
-## Members and Roles
+# Members and Roles
 
 **Hilton Nguyen** - Exercise 1 Memory and Pointers + Documentation
 
@@ -27,9 +27,9 @@ For a user's perspective, only refer to the **Usability** sub-section. For a mar
 
 
 
-## Exercise 1 Memory and Pointers
+# Exercise 1 Memory and Pointers
 
-#### Usability
+## Usability
 
 Navigate to the `/exercise_one_strings/Sources/main.asm` file and modify the following lines of code (on line 26):
 
@@ -51,7 +51,7 @@ Then run the code in the CodeWarrior simulation using the `/exercise_one_strings
 
 
 
-#### Code Functionality
+## Code Functionality
 
 At its highest level the code uses constants to check whether a character is an alphabetic lowercase character, an alphabetic uppercase character or neither. Using these checks it then applies specific transformations to complete each task.
 
@@ -65,12 +65,12 @@ The fourth task block changes the first letter of each sentence to uppercase and
 
 
 
-#### Code Modularity
+## Code Modularity
 The main code is broken up into four sections in order of which task is meant to be completed. Each of these sections would perform one task and the next task can't be performed until the current task is completed. So task two can only start if task one is completed, task three can only start if task two is completed and task four can only start once task three is finished. The subroutines are also set into two blocks depending on how many tasks require it, similar roles they perform and their relative location. In our case, the subroutine to transform letters into uppercase or lowercase would be used by all tasks at some point, but the storing the previous character would only be used by tasks 3 and 4.
 
 
 
-#### Instructions
+## Instructions
 1. Memory has been allocated for the required output strings, as a result of transforming the input string and required variables that are either stored of constantly checking over throughout.
 2. Global variables have been set values, which correspond their ASCII number. The code also goes into section 1.
 3. Task 1 is performed. The 1st output string involves making sure that all of the letters are lowercase. If the character being checked is an uppercase letter, turn it into a lowercase letter. Otherwise, print out the character. If the end of the string is reached by the null character, this indicates that this task is complete and the code now goes into the next section.
@@ -80,14 +80,14 @@ The main code is broken up into four sections in order of which task is meant to
 
 
 
-#### Testing Procedures
+## Testing Procedures
 The testing process involves entering an input string that fits within the memory space determined by each string. A theoretical approach is used to determine what the output strings should look like as a result of the transforming the input string using the four functions. Breakpoints are set to indicate the beginning of each task and the code is simulated quickly, ensuring that the simulated output is the same as the theoretical output. Single steps would also be used to make sure that the code is functioning properly as planned. To ensure that the code is consistently working with different inputs and not reliant on the one input string, the code would be simulated with a different string input. The debugging should be done based on a function by task by task basis. So task one would be debugged until it is consistenty working for a variety of different outputs and this continues for the other tasks.
 
 
 
-## Exercise 2 Digital Input/Output
+# Exercise 2 Digital Input/Output
 
-#### Usability
+## Usability
 
 Navigate to the `/exercise_two_digital/Sources/main.asm` file and modify the following lines of code (on line 43):
 
@@ -101,7 +101,7 @@ Then run the code in the CodeWarrior simulation using the `/exercise_two_digital
 
 
 
-#### Code Functionality
+## Code Functionality
 
 The code begins by configuring the direction of ports used for digital input and output. The main loop of the program checks to see if the button is currently pressed - if so the numbers 0-9 are looped through, otherwise the defined string is scrolled through.
 
@@ -111,7 +111,7 @@ The looping from 0-9 works in a very similar fashion, yet only displaying on the
 
 
 
-#### Code Modularity
+## Code Modularity
 
 The code is separated based on the certain roles each section does. One major section is defining the variables and memory allocation which the code would call upon throughout the simulation. This is further broken down grouping them according to the role. One defines each one of the four 7-seg LEDS. Another subsection represents codes representing characters 0-9 and A-F which would be displayed on each LED segment. We also define the initial counter values, the strings for scrolling and looping and special ascii values.
 
@@ -119,7 +119,7 @@ The scrolling and looping are modularised into their own functions. The lookup t
 
 
 
-#### Instructions
+## Instructions
 
 Overall:
 
@@ -142,16 +142,16 @@ Drawing One Character:
 
 
 
-#### Testing Procedures
+## Testing Procedures
 
 The only effective testing would be to run the program and check to see if it is exhibiting appropriate behaviour. Make sure it is scrolling correctly and that the scroll time is appropriate. Check to see that pressing the button instantly stops scrolling and starts looping (and this is possible at any point in the scroll). Check to see that once looping has finished we begin to scroll from the beginning of the string again.
 
 
 
 
-## Exercise 3 Serial Input/Output
+# Exercise 3 Serial Input/Output
 
-#### Usability
+## Usability
 
 Open up a serial terminal connected to the `SCI1` interface of the board - locate this in your devices and use the correct communication port. Use the following settings:
 
@@ -168,19 +168,19 @@ Then run the code in the CodeWarrior simulation using the `/exercise_three_seria
 
 
 
-#### Code Functionality
+## Code Functionality
 
 The code begins by configuring the serial interface along `SCI1`. We then have a reading loop which reads characters from the serial port until reaching a carriage return, storing each character in a string. When a carriage return is reached, the same string is sent back through the serial port, after which the program begins reading once more.
 
 
 
-#### Code Modularity
+## Code Modularity
 
 We seperate the configuration, reading and transmitting into three nice sections of code. The reading function recursively calls itself until reaching the carriage return where it calls the transmission function. The transmission function then recursively calls itself until reaching the carriage return too where it calls the reading function.
 
 
 
-#### Instructions
+## Instructions
 
 1. Configure the serial port with 9600 baud rate, transmission enabled and reading enabled
 2. Load the beginning of dedicated memory to an index register
@@ -195,7 +195,7 @@ We seperate the configuration, reading and transmitting into three nice sections
 
 
 
-#### Testing Procedures
+## Testing Procedures
 
 Testing the program is done by running the simulation and attempting to send a range of input through the serial terminal. This can include varying the types of characters and messages sent, or varying the length of the messages sent. Currently the only aspect the program should not be able to handle is string lengths larger than 100 (including the carriage return). This could be fixed by increasing the memory allocated on line 26 in the file `/exercise_three_serial/Sources/main.asm` as seen below, or by integrating the use of the stack pointer as opposed to an index register.
 
@@ -208,17 +208,23 @@ STRING_IN   DS.B  100
 
 
 
-## Exercise 4 Integration
+# Exercise 4 Integration
+
+## Usability
 
 
 
-#### Code Functionality
+## Code Functionality
 
 
-#### Code Modularity
+
+## Code Modularity
 
 
-#### Instructions
+
+## Instructions
 
 
-#### Testing Procedures
+
+
+## Testing Procedures
