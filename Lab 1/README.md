@@ -164,7 +164,7 @@ Open up a serial terminal connected to the `SCI1` interface of the board - locat
 
 A suitable serial terminal for windows is [Termite](https://www.compuphase.com/software_termite.htm). 
 
-Then run the code in the CodeWarrior simulation using the `/exercise_three_serial/exercise_three_serial.mcp` project file.
+Then run the code in the CodeWarrior simulation using the `/exercise_three_serial/exercise_three_serial.mcp` project file. Type any string into the serial terminal and send the string to initiate the exercise.
 
 
 
@@ -206,25 +206,67 @@ STRING_IN   DS.B  100
 
 
 
-
-
 # Exercise 4 Integration
 
 ## Usability
+
+Open up a serial terminal connected to the `SCI1` interface of the board - locate this in your devices and use the correct communication port. Use the following settings:
+
+- Baud Rate: 9600bps
+- Data Bits: 8
+- Stop Bits: 1
+- Parity: none
+- Flow control: none
+- Transmitted text: Append CR
+
+A suitable serial terminal for windows is [Termite](https://www.compuphase.com/software_termite.htm). 
+
+Then run the code in the CodeWarrior simulation using the `/exercise_four_integration/exercise_four_integration.mcp` project file. Type any string into the serial terminal and send the string to initiate the exercise. Attempt to both just send the string, and to send the string while pressing down the `PH0` button - ensuring all DP switches are on.
 
 
 
 ## Code Functionality
 
+The code begins by configuring the serial interface along `SCI1`. We then have a reading loop which reads characters from the serial port until reaching a carriage return, storing each character in a string. When a carriage return is reached, we check to see if the `PH0` button has been pressed or not. If so, we modify the string by capitalising each word, otherwise we make all letters uppercase. Once this is done, we transmit characters to the serial port until reaching the carriage return, after which the program begins reading once more.
+
 
 
 ## Code Modularity
+
+We seperate the code into separate blocks:
+
+- Defining variables
+- Configuring the digital ports and serial ports
+- Reading from serial
+- Transmitting to serial
+- Checking if the button is on
+- Making all letters uppercase
+- Capitalising all words
+
+We then branch between these seperate modules to achieve the intended behaviour.
 
 
 
 ## Instructions
 
+Instructions are simplified since most is repeated from previous tasks
+
+1. Define variables for ascii checks and configure the serial port
+2. Read a string from serial until carriage return is read
+3. Check to see if button `PH0` has been pressed, if so go to step 4, otherwise go to step 5
+4. Capitalise the string read from serial then go to step 6
+5. Make the string read from serial uppercase
+6. Transmit the modified string to serial then go to step 2
+
 
 
 
 ## Testing Procedures
+
+Testing the program is done by running the simulation and attempting to send a range of input through the serial terminal. This can include varying the types of characters and messages sent, or varying the length of the messages sent. This also includes sending messages both with the button pressed and not pressed. As discussed in Exercise 3, our only issue is having a fixed length for our string, as seen on line 26 of `/exercise_four_integration/Sources/main.asm` 
+
+```assembly
+STRING_IN   DS.B  100
+STRING_MOD  DS.B  100
+```
+
