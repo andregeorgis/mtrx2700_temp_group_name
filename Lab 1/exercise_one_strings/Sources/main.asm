@@ -22,12 +22,12 @@ ROMStart    EQU  $4000  ; absolute address to place my code/constant data
 ; variable/data section
 
             ORG RAMStart
-output_string1   DS.B  16     ; allocate 16 bytes at the address output_string 1 for task 1
-output_string2   DS.B  16     ; allocate 16 bytes at the address output_string 2 for task 2
-output_string3   DS.B  16     ; allocate 16 bytes at the address output_string 3 for task 3
-output_string4   DS.B  16     ; allocate 16 bytes at the address output_string 4 for task 4
+output_string1   DS.B  112     ; allocate 16 bytes at the address output_string 1 for task 1
+output_string2   DS.B  112     ; allocate 16 bytes at the address output_string 2 for task 2
+output_string3   DS.B  112     ; allocate 16 bytes at the address output_string 3 for task 3
+output_string4   DS.B  112     ; allocate 16 bytes at the address output_string 4 for task 4
 
-input_string    FCC   "thIS i. .astring"  ; make a string in memory, and the length of this string should not exceed the bytes for the output_string
+input_string    FCC  " thIS iS AlSO a VALID input. that WiLL LOOK DIFFERENT when applying these Functions. good LUCK" ; make a string in memory, and the length of this string should not exceed the bytes for the output_string
 null            FCB   $00                 ; set a null terminator at the end of the input_string
 space           FCC   " "                 ; define variable space with space 
 full_stop       FCC   "."                 ; define variable full_stop with full stop
@@ -38,6 +38,7 @@ lower_limit_A     FCB $41     ; lower_limit for upper case, which is A
 upper_limit_z     FCB $7A     ; upper_limit for lower case, which is z
 lower_limit_a     FCB $61     ; lower_limit for lower case, which is a
 
+case_gap          FCB $20
 previous_letter   DS.B  1     ; allocate memory for later use (storing the previous letter in this variable)
 
 
@@ -100,12 +101,13 @@ all_cap:
             
             test2:
                           CMPB   upper_limit_z
-                          BLE    change_lower
+                          BLS    change_lower
             
                           BSR    skip_update
-            
+                          RTS
+                          
             change_lower:
-                          SUBB   space
+                          SUBB   case_gap
                           STAB   0,y
                           INY
                           RTS
@@ -123,13 +125,13 @@ all_lower:
             check2:
             
                           CMPB   upper_limit_Z
-                          BLE    change_upper
+                          BLS    change_upper
             
                           BSR    skip_update
                           RTS    
             
             change_upper:
-                          ADDB   space
+                          ADDB   case_gap
                           STAB   0,y
                           INY
                           RTS              
