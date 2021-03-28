@@ -23,6 +23,10 @@ ROMStart    EQU  $4000  ; absolute address to place my code/constant data
 
             ORG RAMStart
 
+;**************************************************************
+;*                                                            *
+;**************************************************************
+
 ; Define enables for the 7 segments
 NO_SEG      EQU  $FF   ; value to enable no segments
 FIRST_SEG   EQU  $FE   ; value to enable the first segment
@@ -62,6 +66,10 @@ _Startup:
             LDS   #RAMEnd+1       ; initialize the stack pointer
 
             CLI                     ; enable interrupts
+
+;**************************************************************
+;*                                                            *
+;**************************************************************
             
 ; Configure the direction of ports and index registers
 configure:  LDAA    #$FF
@@ -86,6 +94,10 @@ configStrM: LDY     #STRING      ; Store the string to display in Index Register
 ; Configure the counter for timing how long to draw
 configCtrM: LDD     #COUNTER_START  ; Initialise the counter
             STD     COUNTER
+            
+;**************************************************************
+;*                                                            *
+;**************************************************************
 
 ; Calls other subroutines to draw specific output
 mainLoop:          
@@ -136,6 +148,10 @@ smallDelay: LDAA    #255
 delayLoop:  DECA
             BNE     delayLoop
             RTS         
+
+;**************************************************************
+;*                                                            *
+;**************************************************************
 
 ; Given a Current Number, find the segment code needed to draw it
 Lookup:     LDAA    CURR_NUM     ; grab the number
