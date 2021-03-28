@@ -153,21 +153,64 @@ The only effective testing would be to run the program and check to see if it is
 
 #### Usability
 
+Open up a serial terminal connected to the `SCI1` interface of the board - locate this in your devices and use the correct communication port. Use the following settings:
+
+- Baud Rate: 9600bps
+- Data Bits: 8
+- Stop Bits: 1
+- Parity: none
+- Flow control: none
+- Transmitted text: Append CR
+
+A suitable serial terminal for windows is [Termite](https://www.compuphase.com/software_termite.htm). 
+
+Then run the code in the CodeWarrior simulation using the `/exercise_three_serial/exercise_three_serial.mcp` project file.
+
 
 
 #### Code Functionality
 
+The code begins by configuring the serial interface along `SCI1`. We then have a reading loop which reads characters from the serial port until reaching a carriage return, storing each character in a string. When a carriage return is reached, the same string is sent back through the serial port, after which the program begins reading once more.
+
+
 
 #### Code Modularity
+
+We seperate the configuration, reading and transmitting into three nice sections of code. The reading function recursively calls itself until reaching the carriage return where it calls the transmission function. The transmission function then recursively calls itself until reaching the carriage return too where it calls the reading function.
+
 
 
 #### Instructions
 
+1. Configure the serial port with 9600 baud rate, transmission enabled and reading enabled
+2. Load the beginning of dedicated memory to an index register
+3. Read the first serial status register until the flag indicating a byte has been received is set
+4. Store the byte received and increment the index register
+5. Repeat steps 3-4 until the carriage return byte has been received and stored
+6. Load the beginning of the stored string to an index register
+7. Read the first serial status register until the flag indicating that there is nothing currently being transmitted is set
+8. Transmit the current byte and increment the index register
+9. Repeat steps 7-8 until the carriage return byte has been read and sent
+10. Go to step 2
+
+
 
 #### Testing Procedures
 
+Testing the program is done by running the simulation and attempting to send a range of input through the serial terminal. This can include varying the types of characters and messages sent, or varying the length of the messages sent. Currently the only aspect the program should not be able to handle is string lengths larger than 100 (including the carriage return). This could be fixed by increasing the memory allocated on line 26 in the file `/exercise_three_serial/Sources/main.asm` as seen below, or by integrating the use of the stack pointer as opposed to an index register.
+
+```assembly
+STRING_IN   DS.B  100
+```
+
+
+
+
+
 
 ## Exercise 4 Integration
+
+
 
 #### Code Functionality
 
