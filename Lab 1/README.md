@@ -59,7 +59,7 @@ The first task block changes the letters to lowercase. The code would check alon
 
 The second task block changes the letters to uppercase. This works similar to above, except checking if the character is initially lowercase.
 
-The third task block changes the first letter of each word to uppercase and rest lowercase. A word is defined as string of letters between two special characters, which is usually a space. The code stores the value of the previous character in order to recognise a space  character. Condition branches would force the current character in the input string to go thorugh a process to make it an uppercase character if the previous character is either a space or null character. Otherwise, the code would jump into subroutines to change it into a lowercase. The code would then store the value of the current character into the previous character variable to allow the code to check the other characters.  
+The third task block changes the first letter of each word to uppercase and rest lowercase. A word is defined as string of letters between two special characters, which is usually a space. The code stores the value of the previous character in order to recognize a space  character. Condition branches would force the current character in the input string to go through a process to make it an uppercase character if the previous character is either a space or null character. Otherwise, the code would jump into subroutines to change it into a lowercase. The code would then store the value of the current character into the previous character variable to allow the code to check the other characters.  
 
 The fourth task block changes the first letter of each sentence to uppercase and the rest lowercase. A sentence is defined as a string of characters between first letter and a full stop for the first sentence and from full stop to full stop for other sentences. The previous character's value is stored and this would determine which set of branches the code would jump to. If the previous character is a full stop, the code would jump through to check if there is a space character which would then lead to an uppercase letter. Otherwise, the code would jump to subroutines to either turn the letter to lowercase or print out the current character.
 
@@ -81,9 +81,20 @@ The main code is broken up into four sections in order of which task is meant to
 
 
 ## Testing Procedures
-The testing process involves entering an input string that fits within the memory space determined by each string. Breakpoints are set to indicate the beginning of each task and the code is simulated quickly, ensuring that the simulated output is the same as the theoretical output. Single steps would also be used to make sure that the code is functioning properly as planned. To ensure that the code is consistently working with different inputs and not reliant on the one input string, the code would be simulated with a different string input - especially including **special characters** like punctuation. The debugging should be done based on a function by task by task basis. So task one would be debugged until it is consistenty working for a variety of different outputs and this continues for the other tasks.
+The testing process involves entering an input string that fits within the memory space determined by each string. Breakpoints are set to indicate the beginning of each task and the code is simulated quickly, ensuring that the simulated output is the same as the theoretical output. Single steps would also be used to make sure that the code is functioning properly as planned. To ensure that the code is consistently working with different inputs and not reliant on the one input string, the code would be simulated with a different string input - especially including **special characters** like punctuation. The debugging should be done based on a function by task by task basis. So task one would be debugged until it is consistently working for a variety of different outputs and this continues for the other tasks.
 
+Testing cases for exercise 1 could include the following:
 
+1. For the common usage (output string length equals to input string length. Both equals to 16.): 
+   1.  Set input string to "thIS is a string" for cases that only contains uppercase & lowercase letters.
+   2.  Set input string to "thIS i. a s. ing"  for cases that contains uppercase & lowercase letters + multiple full stop.
+   3.  Set input string to "	 !"#$%&'(*+,-./" for special characters test 1.
+   4.  Set input string to ":;<=>?@[\^]_~   " for special characters test 2.
+2. For edge cases:
+   1.  Set input string to "thIS ! .a str. g"  for cases that contains uppercase & lowercase letters + multiple full stop + **no space after full stop** + **special characters **
+   2.  Use the same input string, and set the length of output string to 10, for cases that have an input string longer than the allocated memory for one output string.
+   3.  Use the same input string, and set the length of output string to 20, for cases that allocate excess memory in the output string.
+   4.  Delete the hard-code null character and run the program. **Warning for infinite loop in this test case.**
 
 # Exercise 2 Digital Input/Output
 
@@ -115,7 +126,7 @@ The looping from 0-9 works in a very similar fashion, yet only displaying on the
 
 The code is separated based on the certain roles each section does. One major section is defining the variables and memory allocation which the code would call upon throughout the simulation. This is further broken down grouping them according to the role. One defines each one of the four 7-seg LEDS. Another subsection represents codes representing characters 0-9 and A-F which would be displayed on each LED segment. We also define the initial counter values, the strings for scrolling and looping and special ascii values.
 
-The scrolling and looping are modularised into their own functions. The lookup table and actual displaying is also modularised into their own subroutines. There is one large subroutine responsible for displaying all four segments which calls a smaller subroutine responsible for displaying a single segment. Small delay routines are dispersed throughout these calls.
+The scrolling and looping are modularised into their own functions. The lookup table and actual displaying is also modularized into their own subroutines. There is one large subroutine responsible for displaying all four segments which calls a smaller subroutine responsible for displaying a single segment. Small delay routines are dispersed throughout these calls.
 
 
 
@@ -129,7 +140,7 @@ Overall:
 4. Draw the current 4 characters until the counter has reached 0
 5. Increment to the next character and go to step 4 until we have reached the end, then go back to step 3
 6. Load the loop string and start the counter
-7. Draw each number one by one unilt we have reached the end, then go back to step 3
+7. Draw each number one by one until we have reached the end, then go back to step 3
 
 Drawing One Character:
 
@@ -176,7 +187,7 @@ The code begins by configuring the serial interface along `SCI1`. We then have a
 
 ## Code Modularity
 
-We seperate the configuration, reading and transmitting into three nice sections of code. The reading function recursively calls itself until reaching the carriage return where it calls the transmission function. The transmission function then recursively calls itself until reaching the carriage return too where it calls the reading function.
+We separate the configuration, reading and transmitting into three nice sections of code. The reading function recursively calls itself until reaching the carriage return where it calls the transmission function. The transmission function then recursively calls itself until reaching the carriage return too where it calls the reading function.
 
 
 
@@ -227,13 +238,13 @@ Then run the code in the CodeWarrior simulation using the `/exercise_four_integr
 
 ## Code Functionality
 
-The code begins by configuring the serial interface along `SCI1`. We then have a reading loop which reads characters from the serial port until reaching a carriage return, storing each character in a string. When a carriage return is reached, we check to see if the `PH0` button has been pressed or not. If so, we modify the string by capitalising each word, otherwise we make all letters uppercase. Once this is done, we transmit characters to the serial port until reaching the carriage return, after which the program begins reading once more.
+The code begins by configuring the serial interface along `SCI1`. We then have a reading loop which reads characters from the serial port until reaching a carriage return, storing each character in a string. When a carriage return is reached, we check to see if the `PH0` button has been pressed or not. If so, we modify the string by capitalizing each word, otherwise we make all letters uppercase. Once this is done, we transmit characters to the serial port until reaching the carriage return, after which the program begins reading once more.
 
 
 
 ## Code Modularity
 
-We seperate the code into separate blocks:
+We separate the code into separate blocks:
 
 - Defining variables
 - Configuring the digital ports and serial ports
@@ -241,9 +252,9 @@ We seperate the code into separate blocks:
 - Transmitting to serial
 - Checking if the button is on
 - Making all letters uppercase
-- Capitalising all words
+- Capitalizing all words
 
-We then branch between these seperate modules to achieve the intended behaviour.
+We then branch between these separate modules to achieve the intended behavior.
 
 
 
@@ -254,7 +265,7 @@ Instructions are simplified since most is repeated from previous tasks
 1. Define variables for ascii checks and configure the serial port
 2. Read a string from serial until carriage return is read
 3. Check to see if button `PH0` has been pressed, if so go to step 4, otherwise go to step 5
-4. Capitalise the string read from serial then go to step 6
+4. Capitalize the string read from serial then go to step 6
 5. Make the string read from serial uppercase
 6. Transmit the modified string to serial then go to step 2
 
