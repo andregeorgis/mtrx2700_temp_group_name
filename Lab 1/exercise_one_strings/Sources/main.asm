@@ -27,16 +27,16 @@ output_string2   DS.B  16     ; allocate 16 bytes at the address output_string 2
 output_string3   DS.B  16     ; allocate 16 bytes at the address output_string 3 for task 3
 output_string4   DS.B  16     ; allocate 16 bytes at the address output_string 4 for task 4
 
-input_string    FCC   "thIS i. a string"  ; make a string in memory, and the length of this string should not exceed the bytes for the output_string
-null            FCB   0                   ; set a null terminator at the end of the input_string
+input_string    FCC   "thIS i. .astring"  ; make a string in memory, and the length of this string should not exceed the bytes for the output_string
+null            FCB   $00                 ; set a null terminator at the end of the input_string
 space           FCC   " "                 ; define variable space with space 
 full_stop       FCC   "."                 ; define variable full_stop with full stop
 
-upper_limit_Z     DS.B  1     ; upper_limit for upper case, which is Z
-lower_limit_A     DS.B  1     ; lower_limit for upper case, which is A
+upper_limit_Z     FCB $5A     ; upper_limit for upper case, which is Z
+lower_limit_A     FCB $41     ; lower_limit for upper case, which is A
 
-upper_limit_z     DS.B  1     ; upper_limit for lower case, which is z
-lower_limit_a     DS.B  1     ; lower_limit for lower case, which is a
+upper_limit_z     FCB $7A     ; upper_limit for lower case, which is z
+lower_limit_a     FCB $61     ; lower_limit for lower case, which is a
 
 previous_letter   DS.B  1     ; allocate memory for later use (storing the previous letter in this variable)
 
@@ -53,23 +53,6 @@ _Startup:
 
             CLI                     ; enable interrupts
 
-
-main_loop:    
-                                          ; first, set all global variables
-            
-            LDAA  #$41
-            STAA  lower_limit_A           
-            
-            LDAA  #$5A
-            STAA  upper_limit_Z          
-            
-            
-            LDAA  #$61
-            STAA  lower_limit_a
-            
-            LDAA  #$7A
-            STAA  upper_limit_z
-           
 task1_init:
             LDX   #input_string           ; load the address of the start of the input_string to X
             LDY   #output_string1         ; load the address of the start of the output_string1 to Y
@@ -81,7 +64,7 @@ task1_init:
 task1_loop:
 
             LDAB   1, x+              ; Load the value of the current letter in input_string to Accumulator B
-            CMPB   #$00
+            CMPB   null
             BEQ    task2_init
             
             JSR    all_lower
@@ -99,7 +82,7 @@ task2_init:
 task2_loop:
           
             LDAB   1, x+
-            CMPB   #$00
+            CMPB   null
             BEQ    task3_init
             
             JSR    all_cap
@@ -122,7 +105,7 @@ all_cap:
                           BSR    skip_update
             
             change_lower:
-                          SUBB   #$20
+                          SUBB   space
                           STAB   0,y
                           INY
                           RTS
@@ -146,7 +129,7 @@ all_lower:
                           RTS    
             
             change_upper:
-                          ADDB   #$20
+                          ADDB   space
                           STAB   0,y
                           INY
                           RTS              
@@ -176,7 +159,7 @@ task3_loop:
             CMPA  space
             BEQ   cap_x
             
-            CMPB   #$00
+            CMPB   null
             BEQ    task4_init   
 
             JSR   lower_the_rest 
