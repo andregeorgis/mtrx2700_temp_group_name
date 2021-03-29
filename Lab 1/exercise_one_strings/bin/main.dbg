@@ -8689,10 +8689,10 @@ ROMStart    EQU  $4000  ; absolute address to place my code/constant data
 ; variable/data section
 
             ORG RAMStart
-output_string1   DS.B  112     ; allocate 16 bytes at the address output_string 1 for task 1
-output_string2   DS.B  112     ; allocate 16 bytes at the address output_string 2 for task 2
-output_string3   DS.B  112     ; allocate 16 bytes at the address output_string 3 for task 3
-output_string4   DS.B  112     ; allocate 16 bytes at the address output_string 4 for task 4
+output_string1   DS.B  112     ; allocate a string length at the adress output_string 1 for task 1
+output_string2   DS.B  112     ; allocate a string length at the address output_string 2 for task 2
+output_string3   DS.B  112     ; allocate a string length at the address output_string 3 for task 3
+output_string4   DS.B  112     ; allocate a string length at the address output_string 4 for task 4
 
 input_string    FCC  " thIS iS AlSO a VALID input. that WiLL LOOK DIFFERENT when applying these Functions. good LUCK" ; make a string in memory, and the length of this string should not exceed the bytes for the output_string
 null            FCB   $00                 ; set a null terminator at the end of the input_string
@@ -8721,45 +8721,50 @@ _Startup:
 
             CLI                     ; enable interrupts
 
+;**************************************************************
+;*                    Task 1 Block                            *
+;**************************************************************
+
 task1_init:
-            LDX   #input_string           ; load the address of the start of the input_string to X
-            LDY   #output_string1         ; load the address of the start of the output_string1 to Y
+            LDX   #input_string       ; load the address of the start of the input_string to X
+            LDY   #output_string1     ; load the address of the start of the output_string1 to Y
             
-
-
-; Begin Task 1
 
 task1_loop:
 
             LDAB   1, x+              ; Load the value of the current letter in input_string to Accumulator B
-            CMPB   null
+            CMPB   null               ; If we reach the end of the string go to task 2
             BEQ    task2_init
             
-            JSR    all_lower
+            JSR    all_lower          ; Make each letter lowercase
             BRA    task1_loop
 
-; Begin Task 2
-
+;**************************************************************
+;*                    Task 2 block                            *
+;**************************************************************
 task2_init:
             
-            LDX   #input_string
-            LDY   #output_string2           
+            LDX   #input_string       ; load the address of the start of the input_string to X
+            LDY   #output_string2     ; load the address of the start of the output_string1 to Y      
 
 
 
 task2_loop:
           
-            LDAB   1, x+
-            CMPB   null
+            LDAB   1, x+              ; Load the value of the current letter in input_string to Accumulator B
+            CMPB   null               ; If we reach the end of the string go to task 3
             BEQ    task3_init
             
-            JSR    all_cap
+            JSR    all_cap            ; Make each letter uppercase
             BRA    task2_loop
             
-; Subroutines:
+;**************************************************************
+;*                 Subroutine block 1                         *
+;**************************************************************
 
+; Make all letters uppercase
 all_cap:
-            test1:
+            test1:                                    ; Check if the ascii value is more than or the same as 'a'
                           CMPB   lower_limit_a
                           BHS    test2
             
@@ -8767,21 +8772,22 @@ all_cap:
                           RTS
             
             test2:
-                          CMPB   upper_limit_z
+                          CMPB   upper_limit_z        ; Check if the ascii value is less than or the same as 'z'
                           BLS    change_lower
             
                           BSR    skip_update
                           RTS
                           
-            change_lower:
+            change_lower:                             ; If it is within range, make it uppercase
                           SUBB   case_gap
                           STAB   0,y
                           INY
                           RTS
-            
+
+; Make all letters lowercase            
 all_lower:            
             
-            check1:
+            check1:                                   ; Check if the ascii value is more than or the same as 'A'
                           CMPB   lower_limit_A
                           BHS    check2
      
@@ -8789,7 +8795,7 @@ all_lower:
                           RTS           
             
 
-            check2:
+            check2:                                   ; Check if the ascii value is less than or the same as 'Z'
             
                           CMPB   upper_limit_Z
                           BLS    change_upper
@@ -8797,94 +8803,103 @@ all_lower:
                           BSR    skip_update
                           RTS    
             
-            change_upper:
+            change_upper:                             ; If it is within range, make it lowercase
                           ADDB   case_gap
                           STAB   0,y
                           INY
                           RTS              
-
+                                                      ; If the letter is not within range, store the current letter
 skip_update:
             
             STAB   0,y
             INY
             RTS    
 
+;**************************************************************
+;*                     Task 3 block                           *
+;**************************************************************
 
-; Begin Task 3
 task3_init:
 
-            LDX   #input_string
-            LDY   #output_string3            
+            LDX   #input_string       ; load the address of the start of the input_string to X
+            LDY   #output_string3     ; load the address of the start of the output_string1 to Y       
           
-            STAB  previous_letter     
+            STAB  previous_letter     ; Store the previous letter
             LDAA  previous_letter
       
 task3_loop:       
-            LDAB  1,x+
+            LDAB  1,x+                ; Load the value of the current letter in input_string to Accumulator B
             
-            CMPA  null
+            CMPA  null                ; If we are at the start of the string, capitalise
+            BEQ   cap_x               
+            
+            CMPA  space               ; If the previous string was a space, capitalise
             BEQ   cap_x
             
-            CMPA  space
-            BEQ   cap_x
-            
-            CMPB   null
+            CMPB   null               ; If we reach the end of the string go to task 4
             BEQ    task4_init   
 
-            JSR   lower_the_rest 
+            JSR   lower_the_rest      ; Make the rest of the string lower
             BRA   task3_loop
 
 
-; subroutines for task 3 and 4
-
+;**************************************************************
+;*             Subroutines for task 3 and 4                   *
+;**************************************************************
+ ; Makes letters lowercase
 lower_the_rest:
             
             JSR   all_lower
             JSR   store_prev
             RTS
 
-
+; Makes letters uppercase
 cap_x:
             JSR   all_cap
             JSR   store_prev
             BRA   task3_loop
 
+; Tracks the previous character
 store_prev:
             STAB  previous_letter
             LDAA  previous_letter
             RTS            
             
-            
-; Begin Task 4
+;**************************************************************
+;*                       Task 4 Block                         *
+;**************************************************************            
+
 task4_init
 
-            LDX   #input_string
-            LDY   #output_string4  
-            STAB  previous_letter     
+            LDX   #input_string       ; load the address of the start of the input_string to X
+            LDY   #output_string4     ; load the address of the start of the output_string1 to Y
+            STAB  previous_letter     ; Store the previous letter
             LDAA  previous_letter
             
             
 task4_loop:       
-            LDAB  1,x+
+            LDAB  1,x+                ; Load the value of the current letter in input_string to Accumulator B
             
-            CMPA  null
+            CMPA  null                ; If we are at the start of the string, capitalise
             BEQ   cap_x2
             
-            CMPA  full_stop
+            CMPA  full_stop           ; If the previous character is a full stop, check for a space
             BEQ   space_check
       
 continue_routine:
-            CMPB   #$00
+            CMPB   #$00               ; If we reach the end of the string, end the program
             BEQ    end_task
             
-            JSR   lower_the_rest
+            JSR   lower_the_rest      ; Make the rest of the string lower
             BRA   task4_loop            
 
+; Capitalise the current letter
 cap_x2:
             JSR   all_cap
             JSR   store_prev
             BRA   task4_loop
 
+; Check if the current letter is a space, if so capitalise the next letter, otherwise continue as normal
 space_check:
 
             CMPB  space
@@ -8898,6 +8913,7 @@ cap_after_full_stop:
             LDAB  1,x+
             BRA   cap_x2
 
+; End the program
 end_task:
             LDX   #input_string
             
