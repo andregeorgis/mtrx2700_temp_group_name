@@ -14,8 +14,8 @@
 
 
 
-; Include derivative-specific definitions 
-		INCLUDE 'derivative.inc' 
+; Include derivative-specific definitions
+		INCLUDE 'derivative.inc'
 
 ROMStart    EQU  $4000  ; absolute address to place my code/constant data
 
@@ -60,58 +60,61 @@ _Startup:
             LDS   #RAMEnd+1       ; initialize the stack pointer
 
             CLI                     ; enable interrupts
-   
+
 config:     LDAA  #PORT_ON
             STAA  DDRH           ; Configure PORTH as input
 
-            LDD   #BAUD_RATE           ; Config Serial
+            LDD   #BAUD_RATE     ; Set baud rate to 9600bps
             STD   SCI1BD
-            LDAA  #CR_1
+            LDAA  #CR_1          ; Set Control Registers to enable reading and transmission
             STAA  SCI1CR1
             LDAA  #CR_2
             STAA  SCI1CR2
-             
+
 ;**************************************************************
 ;*                  Reading function                          *
-;************************************************************** 
+;**************************************************************
 
-configStrR: LDX   #STRING_IN     ; Keep reading until we get a carriage return
+configStrR: LDX   #STRING_IN     ; Load a string
 
-readLoop:   LDAA  SCI1SR1
+readLoop:   LDAA  SCI1SR1        ; Attempt to read from serial
             ANDA  #FLAG_1
             BEQ   readLoop
-            LDAA  SCI1DRL
+            LDAA  SCI1DRL        ; Store byte read from serial
             STAA  0, X
-            CMPA  #ASCII_CR      ; If we get a carriage return, modify string
+            CMPA  #ASCII_CR      ; If we are at end of string start modifying the string
             BEQ   modString
             INX
-            BRA   readLoop
- 
+            BRA   readLoop       ; Otherwise keep reading
+
 ;**************************************************************
 ;*                 Transmission function                      *
-;*   (Identify subroutine conditions and character status)    *
-;************************************************************** 
- 
-configStrT: LDX   #STRING_MOD
+;**************************************************************
 
-transmLoop: LDAA  SCI1SR1
+configStrT: LDX   #STRING_MOD    ; Load the string to send
+
+transmLoop: LDAA  SCI1SR1        ; Wait till we can send the byte
             ANDA  #FLAG_2
             BEQ   transmLoop
-            LDAA  0, X
+            LDAA  0, X           ; Send the byte
             STAA  SCI1DRL
-            CMPA  #ASCII_CR
+            CMPA  #ASCII_CR      ; If we are at end of string start reading
             BEQ   configStrR
-            INX
-            BRA   transmLoop            
-            
-modString:  LDX   #STRING_IN
-            LDY   #STRING_MOD
-            LDAA  #START_STR   ; Indicate start of string
-            LDAB  PTH          ; Check if the button is on
+            INX                  ; Otherwise keep transmitting
+            BRA   transmLoop
+
+;**************************************************************
+;*                    Modifying String                        *
+;**************************************************************
+
+modString:  LDX   #STRING_IN     ; Load string received from serial
+            LDY   #STRING_MOD    ; Load memory to save modified string
+            LDAA  #START_STR     ; Indicate start of string
+            LDAB  PTH            ; Check if the button is on
             CMPB  #BUTTON_ON
-            BEQ   capLoop      ; If so capitalise string, otherwise uppercase
-            
-            
+            BEQ   capLoop        ; If so capitalise string, otherwise uppercase
+
+; Makes string Uppercase
 upperLoop:
             LDAB  0, X
             INX
@@ -119,24 +122,25 @@ upperLoop:
             CMPB  #ASCII_CR
             BEQ   configStrT     ; Once we finish modifying, transmit the modified string
             BRA   upperLoop
-            
-capLoop: ; In this routine, A is previous letter and B is current letter       
+
+; Capitalises the string
+capLoop: ; In this routine, A is previous letter and B is current letter
             LDAB  0, X
             INX
-            
+
             CMPA  #START_STR     ; Capitalise start of string
             BEQ   cap_x
-            
+
             CMPA  #ASCII_SP      ; Capitalise after space
             BEQ   cap_x
-            
-            JSR   lower_the_rest 
-            
+
+            JSR   lower_the_rest
+
             CMPB  #ASCII_CR      ; Once we finish modifying, transmit the modified string
             BEQ   configStrT
-            
+
             BRA   capLoop
-            
+
 ;**************************************************************
 ;*                        Subroutines                         *
 ;*                   Character conversion                     *
@@ -146,60 +150,60 @@ all_cap:
             test1:
                           CMPB   lower_limit_a
                           BHS    test2
-            
+
                           JSR    skip_update
                           RTS
-            
+
             test2:
                           CMPB   upper_limit_z
                           BLE    changeLower
-            
+
                           JSR    skip_update
                           RTS
-            
+
             changeLower:
                           SUBB   #CASE_GAP
                           STAB   0,y
                           INY
                           RTS
-                          
-all_lower:            
-            
+
+all_lower:
+
             check1:
                           CMPB   lower_limit_A
                           BHS    check2
-     
+
                           JSR    skip_update
-                          RTS           
-            
+                          RTS
+
 
             check2:
-            
+
                           CMPB   upper_limit_Z
                           BLE    changeUpper
-            
+
                           JSR    skip_update
-                          RTS    
-            
+                          RTS
+
             changeUpper:
                           ADDB   #CASE_GAP
                           STAB   0,y
                           INY
-                          RTS               
+                          RTS
 
 skip_update:
-            
+
             STAB   0,y
             INY
             RTS
-            
-            
+
+
 ;**************************************************************
-;*                  Other subroutines                         *
+;*           Other subroutines (for Capitalising)             *
 ;**************************************************************
 
 lower_the_rest:
-            
+
             JSR   all_lower
             JSR   store_prev
             RTS
@@ -213,7 +217,7 @@ cap_x:
 store_prev:
             STAB  previous_letter
             LDAA  previous_letter
-            RTS             
+            RTS
 
 ;**************************************************************
 ;*                 Interrupt Vectors                          *
