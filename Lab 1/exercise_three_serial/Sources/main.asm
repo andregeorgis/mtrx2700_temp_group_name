@@ -35,9 +35,6 @@ BAUD_RATE   EQU    $9C
 CR_1        EQU    $00
 CR_2        EQU    $0C
 
-STATUS_1    EQU    $20
-STATUS_2    EQU    $80
-
 
 
 ; code section
@@ -70,7 +67,7 @@ config:     LDD   #BAUD_RATE      ; Set baud rate to 9600bps
 configStrR: LDX   #STRING_IN      ; Load a string
 
 readLoop:   LDAA  SCI1SR1         ; Attempt to read from serial
-            ANDA  #STATUS_1
+            ANDA  #mSCI1SR1_RDRF
             BEQ   readLoop
             LDAA  SCI1DRL         ; Store byte read from serial
             STAA  0, X
@@ -86,7 +83,7 @@ readLoop:   LDAA  SCI1SR1         ; Attempt to read from serial
 configStrT: LDX   #STRING_IN      ; Load the string to send
 
 transmLoop: LDAA  SCI1SR1         ; Wait till we can send the byte
-            ANDA  #STATUS_2
+            ANDA  #mSCI1SR1_TDRE
             BEQ   transmLoop
             LDAA  0, X            ; Send the byte
             STAA  SCI1DRL
