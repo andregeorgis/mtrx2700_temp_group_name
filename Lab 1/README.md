@@ -128,7 +128,7 @@ The code is separated based on the certain roles each section does. One major se
 
 The scrolling and looping are modularised into their own functions. The lookup table and actual displaying is also modularized into their own subroutines. There is one large subroutine responsible for displaying all four segments which calls a smaller subroutine responsible for displaying a single segment. Small delay routines are dispersed throughout these calls.
 
-
+ 
 
 ## Instructions
 
