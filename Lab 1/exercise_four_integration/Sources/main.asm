@@ -89,6 +89,7 @@ readLoop:   LDAA  SCI1SR1
  
 ;**************************************************************
 ;*                 Transmission function                      *
+;*   (Identify subroutine conditions and character status)    *
 ;************************************************************** 
  
 configStrT: LDX   #STRING_MOD
@@ -137,7 +138,8 @@ capLoop: ; In this routine, A is previous letter and B is current letter
             BRA   capLoop
             
 ;**************************************************************
-;*                      Subroutines                           *
+;*                        Subroutines                         *
+;*                   Character conversion                     *
 ;**************************************************************
 
 all_cap:
