@@ -216,6 +216,8 @@ STRING_IN   DS.B  100
 
 
 
+*Note that examples of string inputs can be found in the Testing Procedures for Exercise 1*
+
 
 # Exercise 4 Integration
 
@@ -281,3 +283,6 @@ STRING_IN   DS.B  100
 STRING_MOD  DS.B  100
 ```
 
+
+
+*Note that examples of string inputs can be found in the Testing Procedures for Exercise 1*
