@@ -24,7 +24,7 @@ ROMStart    EQU  $4000  ; absolute address to place my code/constant data
             ORG RAMStart
 
 ;**************************************************************
-;*                                                            *
+;*                    Define input/output                     *
 ;**************************************************************
 
 ; Define enables for the 7 segments
@@ -68,7 +68,7 @@ _Startup:
             CLI                     ; enable interrupts
 
 ;**************************************************************
-;*                                                            *
+;*             Configure condition of subroutine              *
 ;**************************************************************
             
 ; Configure the direction of ports and index registers
@@ -96,7 +96,7 @@ configCtrM: LDD     #COUNTER_START  ; Initialise the counter
             STD     COUNTER
             
 ;**************************************************************
-;*                                                            *
+;*           Configure condition of output and delay          *
 ;**************************************************************
 
 ; Calls other subroutines to draw specific output
