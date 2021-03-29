@@ -14,8 +14,8 @@
 
 
 
-; Include derivative-specific definitions 
-		INCLUDE 'derivative.inc' 
+; Include derivative-specific definitions
+		INCLUDE 'derivative.inc'
 
 ROMStart    EQU  $4000  ; absolute address to place my code/constant data
 
@@ -24,7 +24,7 @@ ROMStart    EQU  $4000  ; absolute address to place my code/constant data
             ORG RAMStart
 
 ;**************************************************************
-;*                    Define input/output                     *
+;*                Define Variables and Input                  *
 ;**************************************************************
 
 ; Define enables for the 7 segments
@@ -68,25 +68,29 @@ _Startup:
             CLI                     ; enable interrupts
 
 ;**************************************************************
-;*             Configure condition of subroutine              *
+;*                  Configure Digital Ports                   *
 ;**************************************************************
-            
+
 ; Configure the direction of ports and index registers
 configure:  LDAA    #$FF
             STAA    DDRB         ; Configure PORTB as output
             STAA    DDRP         ; Port P as output to enable 7 segments
             LDAA    #$00
             STAA    DDRH         ; Configure PORTH as input
-            LDX     #SEG_CODES   ; Store all Segment Codes in Index Register X 
+            LDX     #SEG_CODES   ; Store all Segment Codes in Index Register X
 
-; Wraps the main loop of the program (which we treat as a subroutine)          
-main:       
+; Wraps the main loop of the program (which we treat as a subroutine)
+main:
             LDAA    PTH          ; Check if the button is on
-            CMPA    #BUTTON_ON   
+            CMPA    #BUTTON_ON
             BEQ     configStrN   ; If it is on, do the number loop
             JSR     configStrM   ; If it is not on, keep scrolling
             BRA     main
-            
+
+;**************************************************************
+;*                 Scrolling Through A String                 *
+;**************************************************************
+
 ; Configure the index register for the string
 configStrM: LDY     #STRING      ; Store the string to display in Index Register Y
 
@@ -94,16 +98,12 @@ configStrM: LDY     #STRING      ; Store the string to display in Index Register
 ; Configure the counter for timing how long to draw
 configCtrM: LDD     #COUNTER_START  ; Initialise the counter
             STD     COUNTER
-            
-;**************************************************************
-;*         Configure the status of output with delay          *
-;**************************************************************
 
 ; Calls other subroutines to draw specific output
-mainLoop:          
+mainLoop:
             LDAA    PTH             ; Check if the button is on, if it is, end the loop early
-            CMPA    #BUTTON_ON      
-            BEQ     endMainLoop  
+            CMPA    #BUTTON_ON
+            BEQ     endMainLoop
             JSR     DrawString      ; Draw the stored string for approximately one second  (while we wait for counter to reach 0)
             JSR     decCounter      ; Decrement counter
             BNE     mainLoop        ; Loop until counter reaches 0
@@ -111,9 +111,13 @@ mainLoop:
             LDAB    3, Y            ; Check if the current string portion is 4 numbers long
             JSR     checkString
             BNE     configCtrM      ; If it is keep scrolling
-            
+
 endMainLoop:RTS                     ; Otherwise end subroutine
-            
+
+;**************************************************************
+;*                Looping Through Numbers 0-9                 *
+;**************************************************************
+
 ; Configure the index register for the string
 configStrN: LDY     #LOOP_STRING    ; Store the string to display in Index Register Y
 
@@ -123,7 +127,7 @@ configCtrN: LDD     #LOOP_CTR_START ; Initialise the counter
             STD     COUNTER
 
 ; Calls other subroutines to draw specific output for the number loop caused by button press
-numberLoop:          
+numberLoop:
             LDAB    0, Y            ; Find the seg code for the first number
             SUBB    #ASCII_ZERO     ; We assume the string only has numbers
             STAB    CURR_NUM
@@ -138,19 +142,22 @@ numberLoop:
             JSR     checkString
             BNE     configCtrN      ; If not keep looping
             BRA     main            ; Go back to the main loop
-                                 
-               
+
+;**************************************************************
+;*                       Small Delays                         *
+;**************************************************************
+
 ; Delays the program for approximately 0.043 ms
 smallDelay: LDAA    #255
             JSR     delayLoop
             RTS
-            
+
 delayLoop:  DECA
             BNE     delayLoop
-            RTS         
+            RTS
 
 ;**************************************************************
-;*                   Character conversion                     *
+;*              Segment Display Subroutines                   *
 ;**************************************************************
 
 ; Given a Current Number, find the segment code needed to draw it
@@ -159,9 +166,6 @@ Lookup:     LDAA    CURR_NUM     ; grab the number
             STAB    CURR_CODE     ; store the segment code
             RTS
 
-;**************************************************************
-;*                  Draw on a 7-segment LED                   *
-;**************************************************************
 
 ; Given a segment code and a specific segment, draw the number on the LED
 DrawOne:    LDAB    CURR_CODE    ; grab one segment code and specific LED, draw on a specific LED
@@ -169,14 +173,11 @@ DrawOne:    LDAB    CURR_CODE    ; grab one segment code and specific LED, draw 
             STAB    PORTB        ; assign the number
             STAA    PTP          ; enable the current LED
             JSR     smallDelay
-            LDAA    #NO_SEG       
+            LDAA    #NO_SEG
             STAA    PTP          ; disable all LEDs
             RTS
 
-;**************************************************************
-;*                      String scrolling                      *
-;**************************************************************
-            
+
 ; Given a string, draw the first four characters
 DrawString: LDAB    0, Y          ; Find the seg code for the first number
             SUBB    #ASCII_ZERO   ; We assume the string only has numbers
@@ -216,14 +217,14 @@ DrawString: LDAB    0, Y          ; Find the seg code for the first number
 checkString:CMPB    #ASCII_CR     ; Check if it is our null terminator
             RTS
 
-; Decrements our counter            
+; Decrements our counter
 decCounter: LDD     COUNTER    ; Load the counter into D
             SUBD    #1         ; Decrement
             STD     COUNTER    ; Store back into counter
             RTS
-                  
-            
- 
+
+
+
 
 ;**************************************************************
 ;*                 Interrupt Vectors                          *
