@@ -96,7 +96,7 @@ configCtrM: LDD     #COUNTER_START  ; Initialise the counter
             STD     COUNTER
             
 ;**************************************************************
-;*           Configure condition of output and delay          *
+;*         Configure the status of output with delay          *
 ;**************************************************************
 
 ; Calls other subroutines to draw specific output
@@ -150,7 +150,7 @@ delayLoop:  DECA
             RTS         
 
 ;**************************************************************
-;*                                                            *
+;*                   Character conversion                     *
 ;**************************************************************
 
 ; Given a Current Number, find the segment code needed to draw it
@@ -158,6 +158,10 @@ Lookup:     LDAA    CURR_NUM     ; grab the number
             LDAB    A, X            ; convert to segment code
             STAB    CURR_CODE     ; store the segment code
             RTS
+
+;**************************************************************
+;*                  Draw on a 7-segment LED                   *
+;**************************************************************
 
 ; Given a segment code and a specific segment, draw the number on the LED
 DrawOne:    LDAB    CURR_CODE    ; grab one segment code and specific LED, draw on a specific LED
@@ -168,6 +172,10 @@ DrawOne:    LDAB    CURR_CODE    ; grab one segment code and specific LED, draw 
             LDAA    #NO_SEG       
             STAA    PTP          ; disable all LEDs
             RTS
+
+;**************************************************************
+;*                      String scrolling                      *
+;**************************************************************
             
 ; Given a string, draw the first four characters
 DrawString: LDAB    0, Y          ; Find the seg code for the first number
@@ -199,6 +207,10 @@ DrawString: LDAB    0, Y          ; Find the seg code for the first number
             STAB    CURR_SEG
             JSR     DrawOne
             RTS
+
+;**************************************************************
+;*       Check  the end of string and counter decrements      *
+;**************************************************************
 
 ; Checks if we went past the end of the string
 checkString:CMPB    #ASCII_CR     ; Check if it is our null terminator
