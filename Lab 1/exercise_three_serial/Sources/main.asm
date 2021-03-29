@@ -14,8 +14,8 @@
 
 
 
-; Include derivative-specific definitions 
-		INCLUDE 'derivative.inc' 
+; Include derivative-specific definitions
+		INCLUDE 'derivative.inc'
 
 ROMStart    EQU  $4000  ; absolute address to place my code/constant data
 
@@ -51,47 +51,51 @@ _Startup:
 
             CLI                   ; enable interrupts
 
-config:     LDD   #BAUD_RATE            ; configure the serial port
+;**************************************************************
+;*              Configure Serial Interface                    *
+;**************************************************************
+
+config:     LDD   #BAUD_RATE      ; Set baud rate to 9600bps
             STD   SCI1BD
-            LDAA  #CR_1
+            LDAA  #CR_1           ; Set Control Registers to enable reading and transmission
             STAA  SCI1CR1
             LDAA  #CR_2
             STAA  SCI1CR2
-            
+
 
 ;**************************************************************
 ;*                   Reading Function                         *
 ;**************************************************************
 
-configStrR: LDX   #STRING_IN   
+configStrR: LDX   #STRING_IN      ; Load a string
 
-readLoop:   LDAA  SCI1SR1
+readLoop:   LDAA  SCI1SR1         ; Attempt to read from serial
             ANDA  #STATUS_1
             BEQ   readLoop
-            LDAA  SCI1DRL
+            LDAA  SCI1DRL         ; Store byte read from serial
             STAA  0, X
-            CMPA  #ASCII_CR
+            CMPA  #ASCII_CR       ; If we are at end of string start transmitting
             BEQ   configStrT
-            INX
+            INX                   ; Otherwise keep reading
             BRA   readLoop
-  
+
 ;**************************************************************
 ;*                 Transmission Function                      *
-;**************************************************************  
-            
-configStrT: LDX   #STRING_IN
+;**************************************************************
 
-transmLoop: LDAA  SCI1SR1
+configStrT: LDX   #STRING_IN      ; Load the string to send
+
+transmLoop: LDAA  SCI1SR1         ; Wait till we can send the byte
             ANDA  #STATUS_2
             BEQ   transmLoop
-            LDAA  0, X
+            LDAA  0, X            ; Send the byte
             STAA  SCI1DRL
-            CMPA  #ASCII_CR
+            CMPA  #ASCII_CR       ; If we are at end of string start reading
             BEQ   configStrR
-            INX
+            INX                   ; Otherwise keep transmitting
             BRA   transmLoop
-              
-           
+
+
 
 ;**************************************************************
 ;*                 Interrupt Vectors                          *
