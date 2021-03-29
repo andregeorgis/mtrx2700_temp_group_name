@@ -46,8 +46,6 @@ BUTTON_ON   EQU    $FE   ; the button is on if this is the value read (input as 
 BAUD_RATE   EQU    $9C
 CR_1        EQU    $00
 CR_2        EQU    $0C
-FLAG_1      EQU    $20
-FLAG_2      EQU    $80
 
 PORT_ON     EQU    $00
 
@@ -78,7 +76,7 @@ config:     LDAA  #PORT_ON
 configStrR: LDX   #STRING_IN     ; Load a string
 
 readLoop:   LDAA  SCI1SR1        ; Attempt to read from serial
-            ANDA  #FLAG_1
+            ANDA  #mSCI1SR1_RDRF
             BEQ   readLoop
             LDAA  SCI1DRL        ; Store byte read from serial
             STAA  0, X
@@ -94,7 +92,7 @@ readLoop:   LDAA  SCI1SR1        ; Attempt to read from serial
 configStrT: LDX   #STRING_MOD    ; Load the string to send
 
 transmLoop: LDAA  SCI1SR1        ; Wait till we can send the byte
-            ANDA  #FLAG_2
+            ANDA  #mSCI1SR1_TDRE
             BEQ   transmLoop
             LDAA  0, X           ; Send the byte
             STAA  SCI1DRL
@@ -146,30 +144,32 @@ capLoop: ; In this routine, A is previous letter and B is current letter
 ;*                   Character conversion                     *
 ;**************************************************************
 
+; Make all letters uppercase
 all_cap:
-            test1:
+            test1:                                   ; Check if the ascii value is more than or the same as 'a'
                           CMPB   lower_limit_a
                           BHS    test2
 
                           JSR    skip_update
                           RTS
 
-            test2:
+            test2:                                   ; Check if the ascii value is less than or the same as 'z'
                           CMPB   upper_limit_z
                           BLE    changeLower
 
                           JSR    skip_update
                           RTS
 
-            changeLower:
+            changeLower:                             ; If it is within range, make it uppercase
                           SUBB   #CASE_GAP
                           STAB   0,y
                           INY
                           RTS
 
+; Make all letters lowercase
 all_lower:
 
-            check1:
+            check1:                                  ; Check if the ascii value is more than or the same as 'A'
                           CMPB   lower_limit_A
                           BHS    check2
 
@@ -177,7 +177,7 @@ all_lower:
                           RTS
 
 
-            check2:
+            check2:                                  ; Check if the ascii value is less than or the same as 'Z'
 
                           CMPB   upper_limit_Z
                           BLE    changeUpper
@@ -185,14 +185,14 @@ all_lower:
                           JSR    skip_update
                           RTS
 
-            changeUpper:
+            changeUpper:                             ; If it is within range, make it lowercase
                           ADDB   #CASE_GAP
                           STAB   0,y
                           INY
                           RTS
 
 skip_update:
-
+                                                     ; If the letter is not within range, store the current letter
             STAB   0,y
             INY
             RTS
@@ -201,19 +201,20 @@ skip_update:
 ;**************************************************************
 ;*           Other subroutines (for Capitalising)             *
 ;**************************************************************
-
+ ; Makes letters lowercase
 lower_the_rest:
 
             JSR   all_lower
             JSR   store_prev
             RTS
 
-
+; Makes letters uppercase
 cap_x:
             JSR   all_cap
             JSR   store_prev
             BRA   capLoop
 
+; Tracks the previous character
 store_prev:
             STAB  previous_letter
             LDAA  previous_letter
